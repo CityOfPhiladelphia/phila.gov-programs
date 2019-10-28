@@ -15,7 +15,78 @@
       >
     </div>
     <div id="programs-container">
-      <div id="filters-container" />
+      <div id="filters-container">
+        <div
+          class="accordion"
+          data-accordion
+          data-allow-all-closed="true"
+          data-multi-expand="true"
+        >
+          <div
+            class="accordion-item is-active"
+            data-accordion-item
+          >
+            <a
+              href="#"
+              class="h4 accordion-title mbn"
+            >Filter by audience</a>
+            <div
+              class="accordion-content"
+            >
+              <div 
+                v-for="(value, key) in audiences"
+                :key="key"
+              >
+                <input
+                  :id="value.slug"
+                  v-model="checkedAudiences"
+                  type="checkbox"
+                  :value="value.slug"
+                  :name="value.slug"
+                  @click="filterResults"
+                >
+                <label
+                  :for="value.slug"
+                  class="program-audience"
+                >{{ value.name }}</label>
+              </div>
+            </div>
+          </div>
+          <div
+            class="accordion-item is-active"
+            data-accordion-item
+          >
+            <a
+              href="#"
+              class="h4 accordion-title"
+            >Filter by category</a>
+            <div
+              class="accordion-content"
+              data-tab-content
+            >
+              <fieldset>
+                <div
+                  v-for="(value, key) in serviceTypes"
+                  :key="key"
+                >
+                  <input
+                    :id="value.slug"
+                    v-model="checkedServiceTypes"
+                    type="checkbox"
+                    :value="value.slug"
+                    :name="value.slug"
+                    @click="filterResults"
+                  >
+                  <label
+                    :for="value.slug"
+                    class="program-category"
+                  ><span> {{ value.name }}</span></label>
+                </div>
+              </fieldset>
+            </div>
+          </div>
+        </div>
+      </div>
       <div id="programs-display">
         <div id="tiles">
           <paginate 
@@ -59,7 +130,6 @@
               next: 'Next',
               prev: 'Previous'
             }"
-            @change="onLangsPageChange"
           />
         </div>
       </div>
@@ -101,6 +171,10 @@ export default {
       emptyResponse: false,
       failure: false,
       paginate: [ 'programs' ],
+      audiences: [],
+      checkedAudiences: [],
+      serviceTypes: [],
+      checkedServiceTypes: [],
     };
   },
   computed: { 
@@ -127,19 +201,66 @@ export default {
     getAllPrograms: function () {
   
       console.log(philagov + programsEndpoint + 'archives');
-      axios.get(philagov + programsEndpoint + 'archives' , {
-        params: {
-          'count': -1,
-        },
-      })
+      axios
+        .get(philagov + programsEndpoint + 'archives' , {
+          params: {
+            'count': -1,
+          }})
         .then(response => {
           this.programs = response.data;
         
-         
         })
         .catch(e => {
           
+        })
+        .finally(() => {
+          this.getAllServices();
         });
+    },
+
+    getAllServices: function () {
+  
+      console.log(philagov + serviceTypeEndpoint);
+      axios
+        .get(philagov + programsEndpoint + 'archives' , {
+          params: {
+            'count': -1,
+          }})
+        .then(response => {
+          this.serviceTypes = response.data;
+        
+        })
+        .catch(e => {
+          
+        })
+        .finally(() => {
+
+        });
+    },
+
+    getAllAudiences: function () {
+  
+      console.log(philagov + audienceEndpoint);
+      axios
+        .get(philagov + audienceEndpoint , {
+          params: {
+            'count': -1,
+          }})
+        .then(response => {
+          this.audiences = response.data;
+        
+        })
+        .catch(e => {
+          
+        })
+        .finally(() => {
+
+        });
+    },
+    
+    
+    filterResults: function () {
+
     },
 
     updateRouterQuery: function (key, value) {
