@@ -6,7 +6,7 @@
         v-model="search"
         class="search-field"
         type="text"
-        placeholder="Search by title, department, or keyword"
+        placeholder="Search by title or keyword"
       ><input
         ref="archive-search-bar"
         type="submit"
@@ -14,7 +14,28 @@
         value="Search"
       >
     </div>
-    <div id="programs-container">
+    <div
+      v-show="loading"
+      class="mtm center"
+    >
+      <i class="fas fa-spinner fa-spin fa-3x" />
+    </div>
+    <div
+      v-show="!loading && emptyResponse"
+      class="h3 mtm center"
+    >
+      Sorry, there are no results.
+    </div>
+    <div
+      v-show="failure"
+      class="h3 mtm center"
+    >
+      Sorry, there was a problem. Please try again.
+    </div>
+    <div 
+      v-show="!loading && !emptyResponse && !failure" 
+      id="programs-container"
+    >
       <div id="filters-container">
         <div
           class="accordion"
@@ -88,14 +109,15 @@
         <div id="tiles">
           <paginate 
             id="program-results"
-            name="programs"
-            :list="programs"
+            name="filteredPrograms"
+            :list="filteredPrograms"
             class="grid-x grid-margin-x paginate-list"
             tag="div"
-            :per="16"
+            :per="8"
+            v-if="filteredPrograms.length > 0 "
           >
             <div
-              v-for="program in paginated('programs')"
+              v-for="program in paginated('filteredPrograms')"
               :key="program.id"
               class="medium-12 cell mbl"
             >
@@ -118,15 +140,16 @@
         
           <paginate-links
             v-show="!loading && !emptyResponse && !failure"
-            for="programs"
+            for="filteredPrograms"
             :async="true"
             :limit="3"
             :show-step-links="true"
-            :hide-single-page="false"
+            :hide-single-page="true"
             :step-links="{
               next: 'Next',
               prev: 'Previous'
             }"
+            @change="scrollToTop()"
           />
         </div>
       </div>
@@ -146,7 +169,7 @@ Vue.use(VuePaginate);
 // const philagov =  "https://www.phila.gov";
 
 const philagov =  "https://cors-anywhere.herokuapp.com/phila.gov";
-const programsEndpoint = '/wp-json/programs/v1/';
+const programsEndpoint = '/wp-json/programs/v1/archives';
 const audienceEndpoint = '/wp-json/wp/v2/audience/';
 const serviceTypeEndpoint = '/wp-json/wp/v2/service_type/';
 
@@ -162,16 +185,25 @@ export default {
   data: function() {
     return {
       programs: [],
+      filteredPrograms: [],
       search: '',
       routerQuery: {},
-      loading: false,
-      emptyResponse: false,
-      failure: false,
-      paginate: [ 'programs' ],
+      paginate: [ 'filteredPrograms' ],
       audiences: [],
       checkedAudiences: [],
       serviceTypes: [],
       checkedServiceTypes: [],
+      loading: true,
+      emptyResponse: false,
+      failure: false,
+      searchOptions: {
+        shouldSort: true,
+        threshold: 0.3,
+        keys: [
+          'title',
+          'short_description',
+        ],
+      },
     };
   },
   computed: { 
@@ -187,6 +219,9 @@ export default {
       deep: true,
     },
 
+    search () {
+      this.filterBySearch();
+    },
   },
 
   mounted: async function() {
@@ -199,28 +234,22 @@ export default {
   methods: {
  
     getAllPrograms: function () {
-  
-      console.log(philagov + programsEndpoint + 'archives');
       axios
-        .get(philagov + programsEndpoint + 'archives' , {
+        .get(philagov + programsEndpoint , {
           params: {
             'count': -1,
           }})
         .then(response => {
           this.programs = response.data;
-        
+          this.filteredPrograms = response.data;
         })
-        .catch(e => {
-          
-        })
+        .catch(e => {})
         .finally(() => {
-          
+          this.loading = false;
         });
     },
 
     getAllServices: function () {
-  
-      console.log(philagov + serviceTypeEndpoint);
       axios
         .get(philagov + serviceTypeEndpoint, {
           params: {
@@ -228,19 +257,12 @@ export default {
           }})
         .then(response => {
           this.serviceTypes = response.data;
-        
         })
-        .catch(e => {
-          
-        })
-        .finally(() => {
-         
-        });
+        .catch(e => {})
+        .finally(() => {});
     },
 
     getAllAudiences: function () {
-  
-      console.log(philagov + audienceEndpoint);
       axios
         .get(philagov + audienceEndpoint , {
           params: {
@@ -248,18 +270,42 @@ export default {
           }})
         .then(response => {
           this.audiences = response.data;
-        
         })
-        .catch(e => {
-          
-        })
-        .finally(() => {
-
-        });
+        .catch(e => {})
+        .finally(() => {});
     },
     
     
     filterResults: function () {
+
+    },
+
+    filterByAudience: function() {
+      if (this.audiences.length !==0 ){
+        // this.filteredPrograms = [];
+        
+        this.filteredPrograms.forEach((program) => {
+          // go through each audience and see if it matches an item in audiences
+          // if yes, push it and break from item (use let?)
+          // how to make this not take forever... break loop if match
+        });
+      }
+    },
+
+    filterBySearch: function() {
+      if (this.search) { // there is nothing in the search bar -> return everything
+        this.$search(this.search, this.programs, this.searchOptions).then(programs => {
+          this.filteredPrograms = programs;
+        });
+      } else {
+        this.filteredPrograms = this.programs;
+      }
+    },
+
+    filterByServiceType: function() {
+      if (this.serviceTypes.length > 0) {
+
+      }
 
     },
 
@@ -305,7 +351,6 @@ export default {
 <style lang="scss">
 
 #programs {
-  
   margin: 0 auto;
   max-width: 75rem;
 
@@ -320,18 +365,19 @@ export default {
         background-color: white;
         padding: 1rem;
 
-      .accordion-checkbox {
-        user-select: none;
+        .accordion-checkbox {
+          user-select: none;
+        }
       }
-      }
-
     }
 
     #programs-display {
       width: 66%;
+    } 
+  }
 
-    }
-    
+  .paginate-links {
+    float: right;
   }
 }
 
