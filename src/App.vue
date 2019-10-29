@@ -18,24 +18,21 @@
       <div id="filters-container">
         <div
           class="accordion"
-          data-accordion
-          data-allow-all-closed="true"
-          data-multi-expand="true"
         >
           <div
             class="accordion-item is-active"
-            data-accordion-item
           >
             <a
               href="#"
               class="h4 accordion-title mbn"
             >Filter by audience</a>
             <div
-              class="accordion-content"
+              class="acc-content"
             >
               <div 
                 v-for="(value, key) in audiences"
                 :key="key"
+                class="accordion-checkbox"
               >
                 <input
                   :id="value.slug"
@@ -61,13 +58,13 @@
               class="h4 accordion-title"
             >Filter by category</a>
             <div
-              class="accordion-content"
-              data-tab-content
+              class="acc-content"
             >
               <fieldset>
                 <div
                   v-for="(value, key) in serviceTypes"
                   :key="key"
+                  class="accordion-checkbox"
                 >
                   <input
                     :id="value.slug"
@@ -80,7 +77,7 @@
                   <label
                     :for="value.slug"
                     class="program-category"
-                  ><span> {{ value.name }}</span></label>
+                  ><span v-html="value.name" /></label>
                 </div>
               </fieldset>
             </div>
@@ -192,8 +189,11 @@ export default {
 
   },
 
-  mounted:  function() {
+  mounted: async function() {
     this.getAllPrograms();
+    this.getAllAudiences();
+    this.getAllServices();
+    await this.filterResults();
   },
 
   methods: {
@@ -214,7 +214,7 @@ export default {
           
         })
         .finally(() => {
-          this.getAllServices();
+          
         });
     },
 
@@ -222,9 +222,9 @@ export default {
   
       console.log(philagov + serviceTypeEndpoint);
       axios
-        .get(philagov + programsEndpoint + 'archives' , {
+        .get(philagov + serviceTypeEndpoint, {
           params: {
-            'count': -1,
+            'per_page': 30,
           }})
         .then(response => {
           this.serviceTypes = response.data;
@@ -234,7 +234,7 @@ export default {
           
         })
         .finally(() => {
-
+         
         });
     },
 
@@ -305,8 +305,34 @@ export default {
 <style lang="scss">
 
 #programs {
-  width: 900px;
+  
   margin: 0 auto;
+  max-width: 75rem;
+
+  #programs-container {
+    display: flex;
+
+    #filters-container {
+      width: 33%;
+      padding-right: 2rem;
+
+      .acc-content {
+        background-color: white;
+        padding: 1rem;
+
+      .accordion-checkbox {
+        user-select: none;
+      }
+      }
+
+    }
+
+    #programs-display {
+      width: 66%;
+
+    }
+    
+  }
 }
 
 </style>
