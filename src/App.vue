@@ -108,13 +108,13 @@
       <div id="programs-display">
         <div id="tiles">
           <paginate 
+            v-if="filteredPrograms.length > 0 "
             id="program-results"
             name="filteredPrograms"
             :list="filteredPrograms"
             class="grid-x grid-margin-x paginate-list"
             tag="div"
             :per="8"
-            v-if="filteredPrograms.length > 0 "
           >
             <div
               v-for="program in paginated('filteredPrograms')"
@@ -137,20 +137,25 @@
               </a>
             </div>
           </paginate>
+          <div class="program-pages">
+            <div class="program-length">
+              Showing <b> {{ filteredPrograms.length }} </b> programs.
+            </div>
         
-          <paginate-links
-            v-show="!loading && !emptyResponse && !failure"
-            for="filteredPrograms"
-            :async="true"
-            :limit="3"
-            :show-step-links="true"
-            :hide-single-page="true"
-            :step-links="{
-              next: 'Next',
-              prev: 'Previous'
-            }"
-            @change="scrollToTop()"
-          />
+            <paginate-links
+              v-show="!loading && !emptyResponse && !failure && filteredPrograms.length > 0"
+              for="filteredPrograms"
+              :async="true"
+              :limit="3"
+              :show-step-links="true"
+              :hide-single-page="true"
+              :step-links="{
+                next: 'Next',
+                prev: 'Previous'
+              }"
+              @change="scrollToTop()"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -220,7 +225,14 @@ export default {
     },
 
     search () {
-      this.filterBySearch();
+      this.filterResults();
+    },
+
+    checkedAudiences(arr) {
+      this.filterByAudience();
+    },
+    checkedServiceTypes (arr) {
+      this.filterByServiceType();
     },
   },
 
@@ -228,7 +240,7 @@ export default {
     this.getAllPrograms();
     this.getAllAudiences();
     this.getAllServices();
-    await this.filterResults();
+    // await this.filterResults();
   },
 
   methods: {
@@ -276,18 +288,25 @@ export default {
     },
     
     
-    filterResults: function () {
-
+    filterResults: async function () {
+      await this.filterBySearch();
+      await this.checkEmpty();
     },
 
     filterByAudience: function() {
-      if (this.audiences.length !==0 ){
-        // this.filteredPrograms = [];
+      if (this.audiences.length !== 0 ){
+        this.filteredPrograms = [];
         
-        this.filteredPrograms.forEach((program) => {
+        this.programs.forEach((program) => {
           // go through each audience and see if it matches an item in audiences
           // if yes, push it and break from item (use let?)
           // how to make this not take forever... break loop if match
+          program.audiences.forEach((audience) => {
+            if (this.checkedAudiences.includes(audience.slug)) {
+              this.filteredPrograms.push(program);
+
+            }
+          });
         });
       }
     },
@@ -302,11 +321,21 @@ export default {
       }
     },
 
+   
     filterByServiceType: function() {
-      if (this.serviceTypes.length > 0) {
+      if (this.checkedServiceTypes.length !== 0 ){
+        this.filteredPrograms = [];
+        
+        this.programs.forEach((program) => {
+          
+          program.services.forEach((serviceType) => {
+            if (this.checkedServiceTypes.includes(serviceType.slug)) {
+              this.filteredPrograms.push(program);
 
+            }
+          });
+        });
       }
-
     },
 
     updateRouterQuery: function (key, value) {
@@ -325,6 +354,10 @@ export default {
         top: 0,
         behavior: 'smooth',
       });
+    },
+
+    checkEmpty: function() {
+      this.emptyResponse = (this.filteredPrograms.length === 0 ) ? true : false;
     },
 
     resetRouterQuery: function () {
@@ -376,8 +409,10 @@ export default {
     } 
   }
 
-  .paginate-links {
-    float: right;
+  .program-pages {
+    display: flex;
+    justify-content: space-between;
+  
   }
 }
 
