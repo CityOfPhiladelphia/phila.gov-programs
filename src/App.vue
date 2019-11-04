@@ -14,26 +14,9 @@
         value="Search"
       >
     </div>
-    <div
-      v-show="loading"
-      class="mtm center"
-    >
-      <i class="fas fa-spinner fa-spin fa-3x" />
-    </div>
-    <div
-      v-show="!loading && emptyResponse"
-      class="h3 mtm center"
-    >
-      Sorry, there are no results.
-    </div>
-    <div
-      v-show="failure"
-      class="h3 mtm center"
-    >
-      Sorry, there was a problem. Please try again.
-    </div>
+    
     <div 
-      v-show="!loading && !emptyResponse && !failure" 
+      v-show="!loading && !failure" 
       id="programs-container"
     >
       <div id="filters-container">
@@ -106,6 +89,25 @@
         </div>
       </div>
       <div id="programs-display">
+        <div
+      v-show="loading"
+      class="mtm center"
+    >
+      <i class="fas fa-spinner fa-spin fa-3x" />
+    </div>
+    <div
+      v-show="!loading && emptyResponse"
+      class="h3 mtm center"
+    >
+      Sorry, there are no results.
+    </div>
+    <div
+      v-show="failure"
+      class="h3 mtm center"
+    >
+      Sorry, there was a problem. Please try again.
+    </div>
+        
         <div id="tiles">
           <paginate 
             v-if="filteredPrograms.length > 0 "
@@ -138,12 +140,14 @@
             </div>
           </paginate>
           <div class="program-pages">
-            <div class="program-length">
+            <div class="program-length"
+             v-show="!loading && !emptyResponse && !failure"
+             >
               Showing <b> {{ filteredPrograms.length }} </b> programs.
             </div>
         
             <paginate-links
-              v-show="!loading && !emptyResponse && !failure && filteredPrograms.length > 0"
+              v-show="!loading && !emptyResponse && !failure"
               for="filteredPrograms"
               :async="true"
               :limit="3"
@@ -198,6 +202,10 @@ export default {
       checkedAudiences: [],
       serviceTypes: [],
       checkedServiceTypes: [],
+      // searchResults: [],
+      servicePrograms: [],
+      audiencePrograms: [],
+
       loading: true,
       emptyResponse: false,
       failure: false,
@@ -229,10 +237,10 @@ export default {
     },
 
     checkedAudiences(arr) {
-      this.filterByAudience();
+      this.filterResults();
     },
     checkedServiceTypes (arr) {
-      this.filterByServiceType();
+      this.filterResults();
     },
   },
 
@@ -289,52 +297,67 @@ export default {
     
     
     filterResults: async function () {
+      await this.filterByServiceType();
+      await this.filterByAudience();
       await this.filterBySearch();
       await this.checkEmpty();
     },
 
     filterByAudience: function() {
-      if (this.audiences.length !== 0 ){
-        this.filteredPrograms = [];
+      if (this.checkedAudiences.length !== 0 ){
+        this.audiencePrograms = [];
         
-        this.programs.forEach((program) => {
+        this.servicePrograms.forEach((program) => {
           // go through each audience and see if it matches an item in audiences
           // if yes, push it and break from item (use let?)
           // how to make this not take forever... break loop if match
           program.audiences.forEach((audience) => {
             if (this.checkedAudiences.includes(audience.slug)) {
-              this.filteredPrograms.push(program);
-
+              if (!this.audiencePrograms.includes(program)) {
+                this.audiencePrograms.push(program);
+              }
             }
           });
         });
+
+      
+      } else {
+        this.audiencePrograms = this.servicePrograms;
       }
     },
 
     filterBySearch: function() {
-      if (this.search) { // there is nothing in the search bar -> return everything
-        this.$search(this.search, this.programs, this.searchOptions).then(programs => {
+      if (this.search) {
+        // this.searchResults = []; 
+        // there is nothing in the search bar -> return everything
+        this.$search(this.search, this.audiencePrograms, this.searchOptions).then(programs => {
           this.filteredPrograms = programs;
         });
+
+       
       } else {
-        this.filteredPrograms = this.programs;
+        this.filteredPrograms = this.audiencePrograms;
       }
+      
     },
 
-   
     filterByServiceType: function() {
       if (this.checkedServiceTypes.length !== 0 ){
-        this.filteredPrograms = [];
+        this.servicePrograms = [];
         
         this.programs.forEach((program) => {
           
           program.services.forEach((serviceType) => {
             if (this.checkedServiceTypes.includes(serviceType.slug)) {
-              this.filteredPrograms.push(program);
-
+              if (!this.servicePrograms.includes(program)) {
+                this.servicePrograms.push(program);
+              }
             }
           });
         });
+        // this.filteredPrograms = this.searchResults;
+      } else {
+        this.servicePrograms = this.programs;
       }
     },
 
@@ -406,6 +429,11 @@ export default {
 
     #programs-display {
       width: 66%;
+
+      .trim {
+        max-height: 188px;
+        overflow: hidden;
+      }
     } 
   }
 
