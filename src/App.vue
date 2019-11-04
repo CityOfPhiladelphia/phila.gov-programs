@@ -14,9 +14,7 @@
         value="Search"
       >
     </div>
-    
     <div 
-      v-show="!loading && !failure" 
       id="programs-container"
     >
       <div id="filters-container">
@@ -29,8 +27,10 @@
             <a
               href="#"
               class="h4 accordion-title mbn"
+              @click="toggleAudiences"
             >Filter by audience</a>
             <div
+              v-show="showAudiences"
               class="acc-content"
             >
               <div 
@@ -39,12 +39,13 @@
                 class="accordion-checkbox"
               >
                 <input
+                
                   :id="value.slug"
                   v-model="checkedAudiences"
                   type="checkbox"
                   :value="value.slug"
                   :name="value.slug"
-                  @click="filterResults"
+                  @change="filterResults"
                 >
                 <label
                   :for="value.slug"
@@ -60,8 +61,10 @@
             <a
               href="#"
               class="h4 accordion-title"
+              @click="toggleServices"
             >Filter by category</a>
             <div
+              v-show="showServices"
               class="acc-content"
             >
               <fieldset>
@@ -71,6 +74,7 @@
                   class="accordion-checkbox"
                 >
                   <input
+                   
                     :id="value.slug"
                     v-model="checkedServiceTypes"
                     type="checkbox"
@@ -90,23 +94,23 @@
       </div>
       <div id="programs-display">
         <div
-      v-show="loading"
-      class="mtm center"
-    >
-      <i class="fas fa-spinner fa-spin fa-3x" />
-    </div>
-    <div
-      v-show="!loading && emptyResponse"
-      class="h3 mtm center"
-    >
-      Sorry, there are no results.
-    </div>
-    <div
-      v-show="failure"
-      class="h3 mtm center"
-    >
-      Sorry, there was a problem. Please try again.
-    </div>
+          v-show="loading"
+          class="mtm center"
+        >
+          <i class="fas fa-spinner fa-spin fa-3x" />
+        </div>
+        <div
+          v-show="!loading && emptyResponse"
+          class="h3 mtm center"
+        >
+          Sorry, there are no results.
+        </div>
+        <div
+          v-show="failure"
+          class="h3 mtm center"
+        >
+          Sorry, there was a problem. Please try again.
+        </div>
         
         <div id="tiles">
           <paginate 
@@ -140,9 +144,10 @@
             </div>
           </paginate>
           <div class="program-pages">
-            <div class="program-length"
-             v-show="!loading && !emptyResponse && !failure"
-             >
+            <div
+              v-show="!loading && !emptyResponse && !failure"
+              class="program-length"
+            >
               Showing <b> {{ filteredPrograms.length }} </b> programs.
             </div>
         
@@ -205,13 +210,15 @@ export default {
       // searchResults: [],
       servicePrograms: [],
       audiencePrograms: [],
+      showAudiences: true,
+      showServices: true,
 
       loading: true,
       emptyResponse: false,
       failure: false,
       searchOptions: {
         shouldSort: true,
-        threshold: 0.3,
+        threshold: 0.4,
         keys: [
           'title',
           'short_description',
@@ -232,7 +239,7 @@ export default {
       deep: true,
     },
 
-    search () {
+    search() {
       this.filterResults();
     },
 
@@ -242,12 +249,18 @@ export default {
     checkedServiceTypes (arr) {
       this.filterResults();
     },
+    loading(val) {
+      if(!val) {
+        this.filterUnused();
+      }
+    },
   },
 
   mounted: async function() {
-    this.getAllPrograms();
-    this.getAllAudiences();
-    this.getAllServices();
+    await this.getAllPrograms();
+    await this.getAllAudiences();
+    await this.getAllServices();
+   
     // await this.filterResults();
   },
 
@@ -265,7 +278,7 @@ export default {
         })
         .catch(e => {})
         .finally(() => {
-          this.loading = false;
+          // this.loading = false;
         });
     },
 
@@ -279,7 +292,9 @@ export default {
           this.serviceTypes = response.data;
         })
         .catch(e => {})
-        .finally(() => {});
+        .finally(() => {
+          this.loading = false;
+        });
     },
 
     getAllAudiences: function () {
@@ -295,6 +310,26 @@ export default {
         .finally(() => {});
     },
     
+    filterUnused : function() {
+      let usedServices = [];
+      this.programs.forEach((program)=> {
+        program.services.forEach((service)=> {
+          if (service) {
+            if (!usedServices.includes(service)) {
+              usedServices.push(service.slug);
+            }
+          }
+        });
+      });
+
+      let newServiceTypes = [];
+      this.serviceTypes.forEach ((serviceType) => {
+        if (usedServices.includes(serviceType.slug)) {
+          newServiceTypes.push(serviceType);
+        }
+      });
+      this.serviceTypes = newServiceTypes;  
+    },
     
     filterResults: async function () {
       await this.filterByServiceType();
@@ -308,9 +343,6 @@ export default {
         this.audiencePrograms = [];
         
         this.servicePrograms.forEach((program) => {
-          // go through each audience and see if it matches an item in audiences
-          // if yes, push it and break from item (use let?)
-          // how to make this not take forever... break loop if match
           program.audiences.forEach((audience) => {
             if (this.checkedAudiences.includes(audience.slug)) {
               if (!this.audiencePrograms.includes(program)) {
@@ -319,8 +351,6 @@ export default {
             }
           });
         });
-
-      
       } else {
         this.audiencePrograms = this.servicePrograms;
       }
@@ -328,8 +358,6 @@ export default {
 
     filterBySearch: function() {
       if (this.search) {
-        // this.searchResults = []; 
-        // there is nothing in the search bar -> return everything
         this.$search(this.search, this.audiencePrograms, this.searchOptions).then(programs => {
           this.filteredPrograms = programs;
         });
@@ -355,10 +383,17 @@ export default {
             }
           });
         });
-        // this.filteredPrograms = this.searchResults;
       } else {
         this.servicePrograms = this.programs;
       }
+    },
+
+    toggleAudiences: function() {
+      this.showAudiences = this.showAudiences ? false : true;
+    },
+
+    toggleServices: function() {
+      this.showServices = this.showServices ? false : true;
     },
 
     updateRouterQuery: function (key, value) {
@@ -417,6 +452,8 @@ export default {
       width: 33%;
       padding-right: 2rem;
 
+      
+      
       .acc-content {
         background-color: white;
         padding: 1rem;
@@ -424,6 +461,8 @@ export default {
         .accordion-checkbox {
           user-select: none;
         }
+
+      
       }
     }
 
