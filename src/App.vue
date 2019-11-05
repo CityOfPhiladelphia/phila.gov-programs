@@ -13,6 +13,13 @@
         class="search-submit"
         value="Search"
       >
+      <button
+        v-if="search.length > 0"
+        class="clear-search-btn"
+        @click="clearSearchBar"
+      >
+        <i class="fas fa-times " />
+      </button>
     </div>
     <div 
       id="programs-container"
@@ -24,11 +31,13 @@
           <div
             class="accordion-item is-active"
           >
-            <a
-              href="#"
+            <div
+              tabindex="0"
               class="h4 accordion-title mbn"
               @click="toggleAudiences"
-            >Filter by audience</a>
+            >
+              Filter by audience
+            </div>
             <div
               v-show="showAudiences"
               class="acc-content"
@@ -39,7 +48,6 @@
                 class="accordion-checkbox"
               >
                 <input
-                
                   :id="value.slug"
                   v-model="checkedAudiences"
                   type="checkbox"
@@ -48,6 +56,7 @@
                   @change="filterResults"
                 >
                 <label
+                  tabindex="0"  
                   :for="value.slug"
                   class="program-audience"
                 >{{ value.name }}</label>
@@ -58,11 +67,13 @@
             class="accordion-item is-active"
             data-accordion-item
           >
-            <a
-              href="#"
+            <div
+              tabindex="0"
               class="h4 accordion-title"
               @click="toggleServices"
-            >Filter by category</a>
+            >
+              Filter by category
+            </div>
             <div
               v-show="showServices"
               class="acc-content"
@@ -74,7 +85,6 @@
                   class="accordion-checkbox"
                 >
                   <input
-                   
                     :id="value.slug"
                     v-model="checkedServiceTypes"
                     type="checkbox"
@@ -84,6 +94,7 @@
                   >
                   <label
                     :for="value.slug"
+                    tabindex="0"  
                     class="program-category"
                   ><span v-html="value.name" /></label>
                 </div>
@@ -137,7 +148,7 @@
                   class="program-image"
                 ></div>
                 <div class="content-block">
-                  <h3 :class="{ external: [program.link].includes('http') }">{{ program.title }}</h3>
+                  <h3 :class="{ 'external' : program.link.includes('http') }">{{ program.title }}</h3>
                   <p>{{ program.short_description }}</p>
                 </div>
               </a>
@@ -165,6 +176,25 @@
               @change="scrollToTop()"
             />
           </div>
+          <div
+            v-show="showRelated && relatedServices.length > 0"
+            id="related-services"
+            class="grid-x grid-margin-x grid-padding-x"
+          >
+            <div class="medium-24 cell">
+              <h3 class="black bg-ghost-gray phm-mu mtl mbm">
+                Related services
+              </h3>
+              <ul class="phm-mu">
+                <li
+                  v-for="relatedService in relatedServices"
+                  :key="relatedService.id"
+                >
+                  <a :href="relatedService.link">{{ relatedService.name }}</a>
+                </li>
+              </ul>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -186,6 +216,7 @@ const philagov =  "https://cors-anywhere.herokuapp.com/phila.gov";
 const programsEndpoint = '/wp-json/programs/v1/archives';
 const audienceEndpoint = '/wp-json/wp/v2/audience/';
 const serviceTypeEndpoint = '/wp-json/wp/v2/service_type/';
+const relatedServicesEndpoint =  '/wp-json/programs/v1/related_service/';
 
 
 export default {
@@ -207,12 +238,13 @@ export default {
       checkedAudiences: [],
       serviceTypes: [],
       checkedServiceTypes: [],
-      // searchResults: [],
+      relatedServices: [],
+      
       servicePrograms: [],
       audiencePrograms: [],
       showAudiences: true,
       showServices: true,
-
+      showRelated : false,
       loading: true,
       emptyResponse: false,
       failure: false,
@@ -239,29 +271,50 @@ export default {
       deep: true,
     },
 
-    search() {
+    search(value) {
       this.filterResults();
+      if (value.length > 3) {
+        this.updateRouterQuery('search', value);
+      } else {
+        this.updateRouterQuery('search', null);
+      }
+
+      
     },
 
-    checkedAudiences(arr) {
-      this.filterResults();
+    filteredPrograms(val) {
+      if (val.length === 0) {
+        this.getRelatedServices();
+        this.showRelated = true;
+      } else {
+        this.showRelated = false;
+      }
     },
-    checkedServiceTypes (arr) {
+
+    checkedAudiences(val) {
       this.filterResults();
+      this.updateRouterQuery('checkedAudiences', val);
+    
+    },
+    checkedServiceTypes (val) {
+      this.filterResults();
+      this.updateRouterQuery('checkedServiceTypes', val);
+     
     },
     loading(val) {
       if(!val) {
-        this.filterUnused();
+        // this.filterUnused();
+        this.initFilters();
+        this.filterResults();
       }
     },
   },
 
-  mounted: async function() {
-    await this.getAllPrograms();
-    await this.getAllAudiences();
-    await this.getAllServices();
-   
-    // await this.filterResults();
+  mounted: function() {
+    this.getAllPrograms();
+    this.getAllAudiences();
+    this.getAllServices();
+    
   },
 
   methods: {
@@ -278,7 +331,7 @@ export default {
         })
         .catch(e => {})
         .finally(() => {
-          // this.loading = false;
+          this.loading = false;
         });
     },
 
@@ -293,7 +346,7 @@ export default {
         })
         .catch(e => {})
         .finally(() => {
-          this.loading = false;
+          
         });
     },
 
@@ -308,6 +361,27 @@ export default {
         })
         .catch(e => {})
         .finally(() => {});
+    },
+
+    getRelatedServices: function () {
+
+      let params = {
+        count: '50',
+        'audience' : this.checkedAudiences,
+        'service_type': this.checkedServiceTypes,
+      };
+
+      console.log(philagov + relatedServicesEndpoint , params);
+      axios.get(philagov + relatedServicesEndpoint, { params })
+        .then(response => {
+          this.relatedServices = response.data;
+          this.successfulResponse;
+        })
+        .catch(e => {
+              
+        });
+   
+      
     },
     
     filterUnused : function() {
@@ -404,6 +478,10 @@ export default {
       }
     },
 
+    clearSearchBar: function () {
+      this.search = "";
+    },
+
     /**
     * @desc scrolls to top from paginate buttons
     */
@@ -422,6 +500,28 @@ export default {
       for (let routeKey in this.$route.query) {
         Vue.delete(this.routerQuery, routeKey);
       }
+    },
+
+    initFilters: function() {
+      if (Object.keys(this.$route.query).length !== 0) {
+        for (let routerKey in this.$route.query) {
+          if(routerKey === "checkedServiceTypes" || routerKey === "checkedAudiences"){
+            Vue.set(this, routerKey, this.returnArray(this.$route.query[routerKey]));
+          } else {
+            Vue.set(this, routerKey, this.$route.query[routerKey]);
+          }
+        }
+      }
+    },
+
+    returnArray (value) {
+      if (Array.isArray(value)) {
+        return value;
+      } 
+      if (value !== '') {
+        return [ value ];
+      } 
+      return [];
     },
 
     updateRouter: function () {
@@ -445,6 +545,20 @@ export default {
   margin: 0 auto;
   max-width: 75rem;
 
+   .clear-search-btn {
+      position: absolute;
+      top:16px;
+      right: 70px;
+      padding: 0;
+      font-size: 20px;
+      background-color: #fff;
+      opacity: 0.8;
+      z-index: 999;
+      cursor: pointer;
+      color: rgba(60, 60, 60, 0.5);
+      
+    }
+
   #programs-container {
     display: flex;
 
@@ -452,8 +566,12 @@ export default {
       width: 33%;
       padding-right: 2rem;
 
-      
-      
+      .accordion-title {
+        font-weight: bold;
+
+       
+      }
+
       .acc-content {
         background-color: white;
         padding: 1rem;
@@ -481,6 +599,26 @@ export default {
     justify-content: space-between;
   
   }
+
+    @media (max-width: 760px) {
+
+      #programs-container {
+        flex-direction: column;
+        
+
+        #filters-container {
+          width: 95%;
+          margin: 0 auto;
+          padding:0 0 1rem 0
+        }
+        
+        #programs-display {
+          width: 95%;
+          margin: 0 auto;
+        }
+      }
+    }
+
 }
 
 </style>
