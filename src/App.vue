@@ -29,12 +29,13 @@
           class="accordion"
         >
           <div
-            class="accordion-item is-active"
+            class="accordion-item"
+            :class="{'is-active' : showAudiences}"
+            @click="toggleAudiences"
           >
             <div
               tabindex="0"
               class="h4 accordion-title mbn"
-              @click="toggleAudiences"
             >
               Filter by audience
             </div>
@@ -64,13 +65,13 @@
             </div>
           </div>
           <div
-            class="accordion-item is-active"
-            data-accordion-item
+            class="accordion-item"
+            :class="{'is-active' : showServices}"
+            @click="toggleServices"
           >
             <div
               tabindex="0"
               class="h4 accordion-title"
-              @click="toggleServices"
             >
               Filter by category
             </div>
@@ -125,8 +126,10 @@
         
         <div id="tiles">
           <paginate 
+          
             v-if="filteredPrograms.length > 0 "
             id="program-results"
+            ref="paginator"
             name="filteredPrograms"
             :list="filteredPrograms"
             class="grid-x grid-margin-x paginate-list"
@@ -136,7 +139,7 @@
             <div
               v-for="program in paginated('filteredPrograms')"
               :key="program.id"
-              class="medium-12 cell mbl"
+              class="medium-12 cell mbl program-wrap"
             >
               <a
                 class="card program-card"
@@ -173,7 +176,7 @@
                 next: 'Next',
                 prev: 'Previous'
               }"
-              @change="scrollToTop()"
+              @change="onPageChange(); scrollToTop(); "
             />
           </div>
           <div
@@ -238,8 +241,8 @@ export default {
       checkedAudiences: [],
       serviceTypes: [],
       checkedServiceTypes: [],
-      relatedServices: [],
-      
+      relatedServices: [], 
+      page: 1,
       servicePrograms: [],
       audiencePrograms: [],
       showAudiences: true,
@@ -278,7 +281,6 @@ export default {
       } else {
         this.updateRouterQuery('search', null);
       }
-
       
     },
 
@@ -303,22 +305,20 @@ export default {
     },
     loading(val) {
       if(!val) {
-        // this.filterUnused();
         this.initFilters();
         this.filterResults();
       }
     },
+
   },
 
   mounted: function() {
     this.getAllPrograms();
     this.getAllAudiences();
     this.getAllServices();
-    
   },
 
   methods: {
- 
     getAllPrograms: function () {
       axios
         .get(philagov + programsEndpoint , {
@@ -331,6 +331,7 @@ export default {
         })
         .catch(e => {})
         .finally(() => {
+        
           this.loading = false;
         });
     },
@@ -371,38 +372,12 @@ export default {
         'service_type': this.checkedServiceTypes,
       };
 
-      console.log(philagov + relatedServicesEndpoint , params);
       axios.get(philagov + relatedServicesEndpoint, { params })
         .then(response => {
           this.relatedServices = response.data;
-          this.successfulResponse;
         })
         .catch(e => {
-              
         });
-   
-      
-    },
-    
-    filterUnused : function() {
-      let usedServices = [];
-      this.programs.forEach((program)=> {
-        program.services.forEach((service)=> {
-          if (service) {
-            if (!usedServices.includes(service)) {
-              usedServices.push(service.slug);
-            }
-          }
-        });
-      });
-
-      let newServiceTypes = [];
-      this.serviceTypes.forEach ((serviceType) => {
-        if (usedServices.includes(serviceType.slug)) {
-          newServiceTypes.push(serviceType);
-        }
-      });
-      this.serviceTypes = newServiceTypes;  
     },
     
     filterResults: async function () {
@@ -478,6 +453,8 @@ export default {
       }
     },
 
+   
+
     clearSearchBar: function () {
       this.search = "";
     },
@@ -511,7 +488,10 @@ export default {
             Vue.set(this, routerKey, this.$route.query[routerKey]);
           }
         }
+        this.setPage();
       }
+
+      
     },
 
     returnArray (value) {
@@ -534,6 +514,18 @@ export default {
       }).catch(e => {
         // window.console.log(e);
       });
+    },
+
+    onPageChange() {
+      let newPage = this.$refs.paginator.currentPage + 1;
+      this.page = newPage;
+      this.updateRouterQuery('page', newPage);
+    },
+
+    setPage: function() {
+      if (this.page) {
+        this.$refs.paginator.goToPage(this.page);
+      }
     },
   },
 };
@@ -586,6 +578,10 @@ export default {
 
     #programs-display {
       width: 66%;
+
+      .program-wrap {
+        min-height: 353px;
+      }
 
       .trim {
         max-height: 188px;
