@@ -6,6 +6,8 @@ function isIE() {
   if (is_ie) {
     require("./polyfills/Array.prototype.find.js");
     require("./polyfills/Array.prototype.includes.js");
+    require("./polyfills/String.prototype.includes.js");
+    require("./polyfills/Promise.protoype.finally.js");
   }
 }
 

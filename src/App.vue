@@ -103,6 +103,14 @@
             </div>
           </div>
         </div>
+        <div>
+          <button 
+            class="clear-button"
+            @click="clearAllFilters()"
+          >
+            Clear all Filters
+          </button>
+        </div>
       </div>
       <div id="programs-display">
         <div
@@ -213,8 +221,8 @@ import VuePaginate from "vue-paginate";
 Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
-// const philagov =  "https://www.phila.gov";
 
+// const philagov =  "https://www.phila.gov";
 const philagov =  "https://cors-anywhere.herokuapp.com/phila.gov";
 const programsEndpoint = '/wp-json/programs/v1/archives';
 const audienceEndpoint = '/wp-json/wp/v2/audience/';
@@ -410,8 +418,6 @@ export default {
         this.$search(this.search, this.audiencePrograms, this.searchOptions).then(programs => {
           this.filteredPrograms = programs;
         });
-
-       
       } else {
         this.filteredPrograms = this.audiencePrograms;
       }
@@ -452,8 +458,6 @@ export default {
         Vue.set(this.routerQuery, key, value);
       }
     },
-
-   
 
     clearSearchBar: function () {
       this.search = "";
@@ -527,6 +531,13 @@ export default {
         this.$refs.paginator.goToPage(this.page);
       }
     },
+
+    clearAllFilters() {
+      this.checkedAudiences = [];
+      this.checkedServiceTypes = [];
+      this.search = '';
+      this.page = 1;
+    },
   },
 };
 </script>
@@ -560,8 +571,6 @@ export default {
 
       .accordion-title {
         font-weight: bold;
-
-       
       }
 
       .acc-content {
@@ -571,8 +580,10 @@ export default {
         .accordion-checkbox {
           user-select: none;
         }
+      }
 
-      
+      .clear-button {
+        margin: 0 auto;
       }
     }
 
@@ -593,7 +604,6 @@ export default {
   .program-pages {
     display: flex;
     justify-content: space-between;
-  
   }
 
     @media (max-width: 760px) {
@@ -601,7 +611,6 @@ export default {
       #programs-container {
         flex-direction: column;
         
-
         #filters-container {
           width: 95%;
           margin: 0 auto;
