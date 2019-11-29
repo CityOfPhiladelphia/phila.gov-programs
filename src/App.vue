@@ -39,29 +39,30 @@
             >
               Filter by audience
             </div>
-            <div
-              v-show="showAudiences"
-              class="acc-content"
+          </div>
+          <div
+            v-show="showAudiences"
+            class="acc-content"
+          >
+            <div 
+              v-for="(value, key) in audiences"
+              :key="key"
+              class="accordion-checkbox"
             >
-              <div 
-                v-for="(value, key) in audiences"
-                :key="key"
-                class="accordion-checkbox"
+              <input
+                :id="value.slug"
+                v-model="checkedAudiences"
+                type="checkbox"
+                :value="value.slug"
+                :name="value.slug"
+                class="hidden-checkbox"
+                @change="filterResults"
               >
-                <input
-                  :id="value.slug"
-                  v-model="checkedAudiences"
-                  type="checkbox"
-                  :value="value.slug"
-                  :name="value.slug"
-                  @change="filterResults"
-                >
-                <label
-                  tabindex="0"  
-                  :for="value.slug"
-                  class="program-audience"
-                >{{ value.name }}</label>
-              </div>
+              <label
+                 
+                :for="value.slug"
+                class="program-audience"
+              >{{ value.name }}</label>
             </div>
           </div>
           <div
@@ -75,32 +76,33 @@
             >
               Filter by category
             </div>
-            <div
-              v-show="showServices"
-              class="acc-content"
-            >
-              <fieldset>
-                <div
-                  v-for="(value, key) in serviceTypes"
-                  :key="key"
-                  class="accordion-checkbox"
+          </div>
+          <div
+            v-show="showServices"
+            class="acc-content"
+          >
+            <fieldset>
+              <div
+                v-for="(value, key) in serviceTypes"
+                :key="key"
+                class="accordion-checkbox"
+              >
+                <input
+                  :id="value.slug"
+                  v-model="checkedServiceTypes"
+                  type="checkbox"
+                  class="hidden-checkbox"
+                  :value="value.slug"
+                  :name="value.slug"
+                  @click="filterResults"
                 >
-                  <input
-                    :id="value.slug"
-                    v-model="checkedServiceTypes"
-                    type="checkbox"
-                    :value="value.slug"
-                    :name="value.slug"
-                    @click="filterResults"
-                  >
-                  <label
-                    :for="value.slug"
-                    tabindex="0"  
-                    class="program-category"
-                  ><span v-html="value.name" /></label>
-                </div>
-              </fieldset>
-            </div>
+                <label
+                  :for="value.slug"
+                     
+                  class="program-category"
+                ><span v-html="value.name" /></label>
+              </div>
+            </fieldset>
           </div>
         </div>
         <div>
@@ -578,7 +580,21 @@ export default {
         padding: 1rem;
 
         .accordion-checkbox {
+
           user-select: none;
+
+          input[type="checkbox"]:focus + label {
+            border:2px solid black;
+          }
+
+          .hidden-checkbox {
+            display: block;
+            opacity: 1;         // hide it visually
+            z-index: -1;        // avoid unintended clicks
+            position: absolute; // don't affect other elements positioning
+          }
+
+          
         }
       }
 
