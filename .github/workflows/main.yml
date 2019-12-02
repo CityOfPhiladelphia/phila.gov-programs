@@ -17,11 +17,6 @@ jobs:
         run: |
           npm install
           npm run build
-
-  deploy: 
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy to s3
         env: 
             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
