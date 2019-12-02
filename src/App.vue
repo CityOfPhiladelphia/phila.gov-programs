@@ -624,6 +624,11 @@ export default {
 
     @media (max-width: 760px) {
 
+      .search {
+        width: 95%;
+        margin: 0 auto;
+      }
+
       #programs-container {
         flex-direction: column;
         
