@@ -29,6 +29,5 @@ jobs:
         run: 
           aws s3 cp \
             --recursive \
-            --acl public-read \
             --region us-east-1 \
-            ./dist/ [s3://philagov-vue-apps/programs] # change it
+            ./dist/ [s3://philagov-vue-apps/programs] \ # change it
