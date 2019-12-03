@@ -224,8 +224,8 @@ Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
 
-// const philagov =  "https://www.phila.gov";
-const philagov =  "https://cors-anywhere.herokuapp.com/phila.gov";
+const philagov =  "https://www.phila.gov";
+// const philagov =  "https://cors-anywhere.herokuapp.com/phila.gov";
 const programsEndpoint = '/wp-json/programs/v1/archives';
 const audienceEndpoint = '/wp-json/wp/v2/audience/';
 const serviceTypeEndpoint = '/wp-json/wp/v2/service_type/';
