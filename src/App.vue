@@ -264,6 +264,7 @@ export default {
       searchOptions: {
         shouldSort: true,
         threshold: 0.4,
+        tokenize: true,
         keys: [
           'title',
           'short_description',
