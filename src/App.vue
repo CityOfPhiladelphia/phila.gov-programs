@@ -224,7 +224,7 @@ Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
 const programsEndpoint = 'https://api.phila.gov/phila/program/archives';
-const audienceEndpoint = 'https://api.phila.gov/ phila/audience';
+const audienceEndpoint = 'https://api.phila.gov/phila/audience';
 const serviceTypeEndpoint = 'https://api.phila.gov/phila/service/types';
 const relatedServicesEndpoint =  'http://api.phila.gov/phila/program/related-services';
 
