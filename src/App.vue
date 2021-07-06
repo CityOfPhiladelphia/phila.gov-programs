@@ -223,13 +223,10 @@ import VuePaginate from "vue-paginate";
 Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
-
-const philagov =  "https://www.phila.gov";
-// const philagov =  "https://cors-anywhere.herokuapp.com/phila.gov";
-const programsEndpoint = '/wp-json/programs/v1/archives';
-const audienceEndpoint = '/wp-json/wp/v2/audience/';
-const serviceTypeEndpoint = '/wp-json/wp/v2/service_type/';
-const relatedServicesEndpoint =  '/wp-json/programs/v1/related_service/';
+const programsEndpoint = 'https://api.phila.gov/phila/program/archives';
+const audienceEndpoint = 'https://api.phila.gov/ phila/audience';
+const serviceTypeEndpoint = 'https://api.phila.gov/phila/service/types';
+const relatedServicesEndpoint =  'http://api.phila.gov/phila/program/related-services';
 
 
 export default {
@@ -332,7 +329,7 @@ export default {
   methods: {
     getAllPrograms: function () {
       axios
-        .get(philagov + programsEndpoint , {
+        .get( programsEndpoint , {
           params: {
             'count': -1,
           }})
@@ -349,7 +346,7 @@ export default {
 
     getAllServices: function () {
       axios
-        .get(philagov + serviceTypeEndpoint, {
+        .get(serviceTypeEndpoint, {
           params: {
             'per_page': 30,
           }})
@@ -364,7 +361,7 @@ export default {
 
     getAllAudiences: function () {
       axios
-        .get(philagov + audienceEndpoint , {
+        .get( audienceEndpoint , {
           params: {
             'count': -1,
           }})
@@ -383,7 +380,7 @@ export default {
         'service_type': this.checkedServiceTypes,
       };
 
-      axios.get(philagov + relatedServicesEndpoint, { params })
+      axios.get( relatedServicesEndpoint, { params })
         .then(response => {
           this.relatedServices = response.data;
         })
