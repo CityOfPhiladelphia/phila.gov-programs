@@ -549,6 +549,10 @@ export default {
   max-width: 75rem;
   padding: 0px 10px 0px 10px;
 
+  a.card.program-card{
+    min-height:394px;
+  }
+
    .clear-search-btn {
       position: absolute;
       top:16px;
