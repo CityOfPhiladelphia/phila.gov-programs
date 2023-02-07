@@ -350,7 +350,7 @@ export default {
     },
     translateLink(link) {
       let self = this;
-      return self.currentRouteName ? link.replace('www.phila.gov', 'www.phila.gov'+self.currentRouteName) : link;
+      return (self.currentRouteName && (link.toLowerCase().indexOf("http") === -1)) ? self.currentRouteName+link : link;
     },
 
     getAllServices: function () {
