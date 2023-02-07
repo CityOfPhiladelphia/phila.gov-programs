@@ -153,7 +153,7 @@
             >
               <a
                 class="card program-card"
-                :href="program.link"
+                :href="translateLink(program.link)"
               >
                 <div class="trim"><img
                   :src="program.image"
@@ -270,7 +270,9 @@ export default {
     };
   },
   computed: { 
-   
+    currentRouteName() {
+      return this.isTranslated(this.$route.path) ? this.$route.path : null;
+    },
   },
 
   watch: {
@@ -291,7 +293,6 @@ export default {
       }
       
     },
-
     filteredPrograms(val) {
       if (val.length === 0) {
         this.getRelatedServices();
@@ -342,6 +343,14 @@ export default {
         
           this.loading = false;
         });
+    },
+    isTranslated(path) {
+      let langList = [ '/zh', '/es','/ar', '/fr', '/ru', '/ms', '/hi', '/pt', '/bn', '/id', '/sw', '/ja', '/de', '/ko', '/it', '/fa', '/tr', '/nl', '/te', '/vi', '/ht' ];
+      return (langList.indexOf(path) > -1);
+    },
+    translateLink(link) {
+      let self = this;
+      return self.currentRouteName ? link.replace('www.phila.gov', 'www.phila.gov'+self.currentRouteName) : link;
     },
 
     getAllServices: function () {

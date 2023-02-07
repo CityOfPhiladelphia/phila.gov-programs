@@ -7,6 +7,7 @@
     "build": "vue-cli-service build",
     "build-modern": "vue-cli-service build --modern",
     "build-dev": "vue-cli-service build --mode dev",
+    "build-staging": "vue-cli-service build --mode staging",
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
@@ -33,8 +34,8 @@
     "babel-eslint": "^10.0.2",
     "eslint": "^5.16.0",
     "eslint-plugin-vue": "^5.2.3",
-    "node-sass": "^4.9.0",
-    "sass-loader": "^7.3.1",
+    "sass": "^1.26.5",
+    "sass-loader": "^8.0.2",
     "vue-template-compiler": "^2.6.10"
   }
 }
