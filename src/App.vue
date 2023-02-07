@@ -203,7 +203,7 @@
                   v-for="relatedService in relatedServices"
                   :key="relatedService.id"
                 >
-                  <a :href="relatedService.link">{{ relatedService.name }}</a>
+                  <a :href="translateLink(relatedService.link)">{{ relatedService.name }}</a>
                 </li>
               </ul>
             </div>
