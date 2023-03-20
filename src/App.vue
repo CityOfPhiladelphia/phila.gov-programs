@@ -153,7 +153,7 @@
             >
               <a
                 class="card program-card"
-                :href="program.link"
+                :href="translateLink(program.link)"
               >
                 <div class="trim"><img
                   :src="program.image"
@@ -203,7 +203,7 @@
                   v-for="relatedService in relatedServices"
                   :key="relatedService.id"
                 >
-                  <a :href="relatedService.link">{{ relatedService.name }}</a>
+                  <a :href="translateLink(relatedService.link)">{{ relatedService.name }}</a>
                 </li>
               </ul>
             </div>
@@ -273,7 +273,6 @@ export default {
     currentRouteName() {
       return this.isTranslated(window.location.pathname);
     },
-
     programsEndpoint() {
       let language = this.isTranslated(window.location.pathname);
       if (language == '/es') {
@@ -321,7 +320,6 @@ export default {
       }
       
     },
-
     filteredPrograms(val) {
       if (val.length === 0) {
         this.getRelatedServices();
@@ -388,6 +386,20 @@ export default {
         
           this.loading = false;
         });
+    },
+    isTranslated(path) {
+      let splitPath = path.split("/");
+      const langList = [ 'zh', 'es','ar', 'fr', 'ru', 'ms', 'hi', 'pt', 'bn', 'id', 'sw', 'ja', 'de', 'ko', 'it', 'fa', 'tr', 'nl', 'te', 'vi', 'ht' ];
+      for (let i = 0; i < splitPath.length; i++) {
+        if (langList.indexOf(splitPath[i]) > -1) {
+          return '/'+splitPath[i];
+        }
+      }
+      return null;
+    },
+    translateLink(link) {
+      let self = this;
+      return (self.currentRouteName && (link.toLowerCase().indexOf("http") === -1)) ? self.currentRouteName+link : link;
     },
 
     getAllServices: function () {
