@@ -223,9 +223,9 @@ import VuePaginate from "vue-paginate";
 Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
-const programsEndpoint = 'https://api.phila.gov/phila/program/archives';
-const audienceEndpoint = 'https://api.phila.gov/phila/audience';
-const serviceTypeEndpoint = 'https://api.phila.gov/phila/service/types';
+const defaultProgramsEndpoint = 'https://api.phila.gov/phila/program/archives';
+const defaultAudienceEndpoint = 'https://api.phila.gov/phila/audience';
+const defaultServiceTypeEndpoint = 'https://api.phila.gov/phila/service/types';
 const relatedServicesEndpoint =  'http://api.phila.gov/phila/program/related-services';
 
 
@@ -270,7 +270,37 @@ export default {
     };
   },
   computed: { 
-   
+    currentRouteName() {
+      return this.isTranslated(window.location.pathname);
+    },
+
+    programsEndpoint() {
+      let language = this.isTranslated(window.location.pathname);
+      if (language == '/es') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_program_archives.json';
+      } else if (language == '/zh') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_program_archives.json';
+      }
+      return defaultProgramsEndpoint;
+    },
+    audienceEndpoint() {
+      let language = this.isTranslated(window.location.pathname);
+      if (language == '/es') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_audience.json';
+      } else if (language == '/zh') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_audience.json';
+      }
+      return defaultAudienceEndpoint;
+    },
+    serviceTypeEndpoint() {
+      let language = this.isTranslated(window.location.pathname);
+      if (language == '/es') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_service_categories.json';
+      } else if (language == '/zh') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_service_categories.json';
+      }
+      return defaultServiceTypeEndpoint;
+    },
   },
 
   watch: {
@@ -327,9 +357,25 @@ export default {
   },
 
   methods: {
+    isTranslated(path) {
+      let splitPath = path.split("/");
+      const langList = [ 'zh', 'es','ar', 'fr', 'ru', 'ms', 'hi', 'pt', 'bn', 'id', 'sw', 'ja', 'de', 'ko', 'it', 'fa', 'tr', 'nl', 'te', 'vi', 'ht' ];
+      for (let i = 0; i < splitPath.length; i++) {
+        if (langList.indexOf(splitPath[i]) > -1) {
+          return '/'+splitPath[i];
+        }
+      }
+      return null;
+    },
+
+    translateLink(link) {
+      let self = this;
+      return self.currentRouteName ? self.currentRouteName+link : link;
+    },
+
     getAllPrograms: function () {
       axios
-        .get( programsEndpoint , {
+        .get( this.programsEndpoint , {
           params: {
             'count': -1,
           }})
@@ -346,7 +392,7 @@ export default {
 
     getAllServices: function () {
       axios
-        .get(serviceTypeEndpoint, {
+        .get(this.serviceTypeEndpoint, {
           params: {
             'per_page': 30,
           }})
@@ -361,7 +407,7 @@ export default {
 
     getAllAudiences: function () {
       axios
-        .get( audienceEndpoint , {
+        .get( this.audienceEndpoint , {
           params: {
             'count': -1,
           }})
