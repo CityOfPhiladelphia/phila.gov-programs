@@ -6,7 +6,7 @@
         v-model="search"
         class="search-field"
         type="text"
-        placeholder="Search by title or keyword"
+        :placeholder="$t('Search')"
       ><input
         ref="archive-search-bar"
         type="submit"
@@ -37,7 +37,7 @@
               tabindex="0"
               class="h4 accordion-title mbn"
             >
-              Filter by audience
+              {{ $t('Filter by audience') }}
             </div>
           </div>
           <div
@@ -74,7 +74,7 @@
               tabindex="0"
               class="h4 accordion-title"
             >
-              Filter by category
+              {{ $t('Filter by category') }}
             </div>
           </div>
           <div
@@ -110,7 +110,7 @@
             class="clear-button"
             @click="clearAllFilters()"
           >
-            Clear all Filters
+            {{ $t('Clear all filters') }}
           </button>
         </div>
       </div>
@@ -125,13 +125,13 @@
           v-show="!loading && emptyResponse"
           class="h3 mtm center"
         >
-          Sorry, there are no results.
+          {{ $t('No results') }}
         </div>
         <div
           v-show="failure"
           class="h3 mtm center"
         >
-          Sorry, there was a problem. Please try again.
+          {{ $t('Try again') }}
         </div>
         
         <div id="tiles">
@@ -153,7 +153,7 @@
             >
               <a
                 class="card program-card"
-                :href="program.link"
+                :href="translateLink(program.link)"
               >
                 <div class="trim"><img
                   :src="program.image"
@@ -172,7 +172,7 @@
               v-show="!loading && !emptyResponse && !failure"
               class="program-length"
             >
-              Showing <b> {{ filteredPrograms.length }} </b> programs.
+              {{ $t('Showing') }} <b> {{ filteredPrograms.length }} </b> {{ $t('Programs') }}.
             </div>
         
             <paginate-links
@@ -183,8 +183,8 @@
               :show-step-links="true"
               :hide-single-page="true"
               :step-links="{
-                next: 'Next',
-                prev: 'Previous'
+                next: $t('Next'),
+                prev: $t('Previous')
               }"
               @change="onPageChange(); scrollToTop(); "
             />
@@ -203,7 +203,7 @@
                   v-for="relatedService in relatedServices"
                   :key="relatedService.id"
                 >
-                  <a :href="relatedService.link">{{ relatedService.name }}</a>
+                  <a :href="translateLink(relatedService.link)">{{ relatedService.name }}</a>
                 </li>
               </ul>
             </div>
@@ -219,15 +219,15 @@ import Vue from "vue";
 import axios from "axios";
 import VueFuse from "vue-fuse";
 import VuePaginate from "vue-paginate";
+import { loadLanguageAsync } from './i18n.js';
 
 Vue.use(VueFuse);
 Vue.use(VuePaginate);
 
-const programsEndpoint = 'https://api.phila.gov/phila/program/archives';
-const audienceEndpoint = 'https://api.phila.gov/phila/audience';
-const serviceTypeEndpoint = 'https://api.phila.gov/phila/service/types';
+const defaultProgramsEndpoint = 'https://api.phila.gov/phila/program/archives';
+const defaultAudienceEndpoint = 'https://api.phila.gov/phila/audience';
+const defaultServiceTypeEndpoint = 'https://api.phila.gov/phila/service/types';
 const relatedServicesEndpoint =  'http://api.phila.gov/phila/program/related-services';
-
 
 export default {
   name: "Programs",
@@ -270,7 +270,44 @@ export default {
     };
   },
   computed: { 
-   
+    currentRouteName() {
+      return this.isTranslated(window.location.pathname);
+    },
+
+    language() {
+      let lang = this.isTranslated(window.location.pathname);
+      if (lang =='/es') {
+        return 'es';
+      } else if (lang =='/zh') {
+        return 'zh';
+      }
+      return 'en';
+    },
+
+    programsEndpoint() {
+      if (this.language == 'es') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_program_archives.json';
+      } else if (this.language == 'zh') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_program_archives.json';
+      }
+      return defaultProgramsEndpoint;
+    },
+    audienceEndpoint() {
+      if (this.language == 'es') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_audience.json';
+      } else if (this.language == 'zh') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_audience.json';
+      }
+      return defaultAudienceEndpoint;
+    },
+    serviceTypeEndpoint() {
+      if (this.language == 'es') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_service_categories.json';
+      } else if (this.language == 'zh') {
+        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_service_categories.json';
+      }
+      return defaultServiceTypeEndpoint;
+    },
   },
 
   watch: {
@@ -291,7 +328,6 @@ export default {
       }
       
     },
-
     filteredPrograms(val) {
       if (val.length === 0) {
         this.getRelatedServices();
@@ -324,12 +360,29 @@ export default {
     this.getAllPrograms();
     this.getAllAudiences();
     this.getAllServices();
+    loadLanguageAsync(this.language);
   },
 
   methods: {
+    isTranslated(path) {
+      let splitPath = path.split("/");
+      const langList = [ 'zh', 'es','ar', 'fr', 'ru', 'ms', 'hi', 'pt', 'bn', 'id', 'sw', 'ja', 'de', 'ko', 'it', 'fa', 'tr', 'nl', 'te', 'vi', 'ht' ];
+      for (let i = 0; i < splitPath.length; i++) {
+        if (langList.indexOf(splitPath[i]) > -1) {
+          return '/'+splitPath[i];
+        }
+      }
+      return null;
+    },
+
+    translateLink(link) {
+      let self = this;
+      return self.currentRouteName ? self.currentRouteName+link : link;
+    },
+
     getAllPrograms: function () {
       axios
-        .get( programsEndpoint , {
+        .get( this.programsEndpoint , {
           params: {
             'count': -1,
           }})
@@ -343,10 +396,10 @@ export default {
           this.loading = false;
         });
     },
-
+    
     getAllServices: function () {
       axios
-        .get(serviceTypeEndpoint, {
+        .get(this.serviceTypeEndpoint, {
           params: {
             'per_page': 30,
           }})
@@ -361,7 +414,7 @@ export default {
 
     getAllAudiences: function () {
       axios
-        .get( audienceEndpoint , {
+        .get( this.audienceEndpoint , {
           params: {
             'count': -1,
           }})
