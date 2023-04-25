@@ -396,7 +396,7 @@ export default {
           this.loading = false;
         });
     },
-    
+
     getAllServices: function () {
       axios
         .get(this.serviceTypeEndpoint, {
