@@ -377,6 +377,9 @@ export default {
 
     translateLink(link) {
       let self = this;
+      if (link.includes('http')) {
+        return link;
+      }
       return self.currentRouteName ? self.currentRouteName+link : link;
     },
 
