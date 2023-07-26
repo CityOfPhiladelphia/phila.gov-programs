@@ -385,7 +385,6 @@ export default {
 
     translateLink(link) {
       let self = this;
-      //filter out links that are relative versus absolute
       if (link.includes('http')) {
         return link;
       }
