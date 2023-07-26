@@ -59,4 +59,16 @@ const languages = {
     "No results": "抱歉，没有结果。",
     "Try again": "抱歉，出现了一个问题。请再试一次。",
   },
+  'ar': {
+    "Search" : "البحث حسب العنوان أو الكلمة الرئيسية",
+    "Filter by category" : "التصفية حسب الفئة",
+    "Filter by audience" : "التصفية حسب الجمهور",
+    "Showing": "عرض",
+    "Programs": "برامج",
+    "Next": "التالي",
+    "Previous": "السابق",
+    "Clear all filters": "مسح جميع الفلاتر",
+    "No results": "عذرًا، لا توجد نتائج",
+    "Try again": "آسف، كانت هناك مشكلة. يرجى المحاولة مرة أخرى",
+  },
 };
