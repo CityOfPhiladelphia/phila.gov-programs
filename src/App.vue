@@ -276,44 +276,68 @@ export default {
 
     language() {
       let lang = this.isTranslated(window.location.pathname);
-      if (lang =='/es') {
-        return 'es';
-      } else if (lang =='/zh') {
-        return 'zh';
-      } else if (lang =='/ar') {
-        return 'ar';
-      }
-      return 'en';
+      const validLanguages = [ '/es', '/zh', '/ar', '/ht', '/fr', '/sw', '/pt', '/ru', '/vi' ];
+      if (validLanguages.includes(lang)) {
+        return lang.substring(1); 
+      } 
+      return 'en'; 
     },
 
     programsEndpoint() {
-      if (this.language == 'es') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_program_archives.json';
-      } else if (this.language == 'zh') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_program_archives.json';
-      } else if (this.language == 'ar') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_program_archives.json';
-      }
+      const languageUrls = {
+        'es': 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_program_archives.json',
+        'zh': 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_program_archives.json',
+        'ar': 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_program_archives.json',
+        'ht': 'https://translated-endpoints-json.s3.amazonaws.com/ht/phila_program_archives.json',
+        'fr': 'https://translated-endpoints-json.s3.amazonaws.com/fr/phila_program_archives.json',
+        'sw': 'https://translated-endpoints-json.s3.amazonaws.com/sw/phila_program_archives.json',
+        'pt': 'https://translated-endpoints-json.s3.amazonaws.com/pt/phila_program_archives.json',
+        'ru': 'https://translated-endpoints-json.s3.amazonaws.com/ru/phila_program_archives.json',
+        'vi': 'https://translated-endpoints-json.s3.amazonaws.com/vi/phila_program_archives.json',
+      };
+
+      if (languageUrls[this.language]) {
+        return languageUrls[this.language];
+      } 
       return defaultProgramsEndpoint;
     },
     audienceEndpoint() {
-      if (this.language == 'es') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_audience.json';
-      } else if (this.language == 'zh') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_audience.json';
-      } else if (this.language == 'ar') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_audience.json';
-      }
+
+      const audienceUrls = {
+        'es': 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_audience.json',
+        'zh': 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_audience.json',
+        'ar': 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_audience.json',
+        'ht': 'https://translated-endpoints-json.s3.amazonaws.com/ht/phila_audience.json',
+        'fr': 'https://translated-endpoints-json.s3.amazonaws.com/fr/phila_audience.json',
+        'sw': 'https://translated-endpoints-json.s3.amazonaws.com/sw/phila_audience.json',
+        'pt': 'https://translated-endpoints-json.s3.amazonaws.com/pt/phila_audience.json',
+        'ru': 'https://translated-endpoints-json.s3.amazonaws.com/ru/phila_audience.json',
+        'vi': 'https://translated-endpoints-json.s3.amazonaws.com/vi/phila_audience.json',
+      };
+
+      if (audienceUrls[this.language]) {
+        return audienceUrls[this.language];
+      } 
+
       return defaultAudienceEndpoint;
     },
     serviceTypeEndpoint() {
-      if (this.language == 'es') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_service_categories.json';
-      } else if (this.language == 'zh') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_service_categories.json';
-      } else if (this.language == 'ar') {
-        return 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_audience.json';
-      }
+      const serviceUrls = {
+        'es': 'https://translated-endpoints-json.s3.amazonaws.com/es/phila_service_categories.json',
+        'zh': 'https://translated-endpoints-json.s3.amazonaws.com/zh/phila_service_categories.json',
+        'ar': 'https://translated-endpoints-json.s3.amazonaws.com/ar/phila_service_categories.json',
+        'ht': 'https://translated-endpoints-json.s3.amazonaws.com/ht/phila_service_categories.json',
+        'fr': 'https://translated-endpoints-json.s3.amazonaws.com/fr/phila_service_categories.json',
+        'sw': 'https://translated-endpoints-json.s3.amazonaws.com/sw/phila_service_categories.json',
+        'pt': 'https://translated-endpoints-json.s3.amazonaws.com/pt/phila_service_categories.json',
+        'ru': 'https://translated-endpoints-json.s3.amazonaws.com/ru/phila_service_categories.json',
+        'vi': 'https://translated-endpoints-json.s3.amazonaws.com/vi/phila_service_categories.json',
+      };
+
+      if (serviceUrls[this.language]) {
+        return serviceUrls[this.language];
+      } 
+
       return defaultServiceTypeEndpoint;
     },
   },
