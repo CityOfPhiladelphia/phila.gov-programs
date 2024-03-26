@@ -135,8 +135,37 @@
         </div>
         
         <div id="tiles">
+          <div class="filter-summary">
+            <span 
+              v-if="search.length > 0" 
+              class="result-summary"
+            >
+              Showing {{ filteredPrograms.length }} results out of {{ programs.length }} in <b><em>Programs</em></b> for <b><em>"{{ search }}"</em></b>
+            </span>
+            <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
+              <button
+                v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
+                :key="index"
+                class="filter-button"
+                @click="removeFilter(item)"
+              >
+                {{ item }}
+                <i class="far fa-times" />
+              </button>
+            </span>
+
+            <span>
+              <input
+                v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
+                type="submit"
+                class="clear-button"
+                value="Clear all"
+                @click="clearAllFilters"
+              >
+            </span>
+          </div>
+
           <paginate 
-          
             v-if="filteredPrograms.length > 0 "
             id="program-results"
             ref="paginator"
@@ -449,6 +478,17 @@ export default {
         .catch(e => {
         });
     },
+
+    removeFilter(item) {
+      if (this.checkedAudiences.includes(item)) {
+        this.checkedAudiences = this.checkedAudiences.filter(audience => audience !== item);
+      } else if (this.checkedServiceTypes.includes(item)) {
+        this.checkedServiceTypes = this.checkedServiceTypes.filter(serviceType => serviceType !== item);
+      }
+      this.filterResults();
+      this.updateRouterQuery('checkedAudiences', this.checkedAudiences);
+      this.updateRouterQuery('checkedServiceTypes', this.checkedServiceTypes);
+    },
     
     filterResults: async function () {
       await this.filterByServiceType();
@@ -622,6 +662,36 @@ export default {
       cursor: pointer;
       color: rgba(60, 60, 60, 0.5);
       
+    }
+
+    .filter-summary{
+      margin: 0px 0px 16px 0px;
+    }
+
+    .filter-button{
+      margin: 0px 8px 8px 0px;
+      padding: 4px;
+      border-radius: 4px;
+      background-color: #cfcfcf;
+      color: #333333;
+      line-height: normal;
+      text-transform: capitalize;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    .result-summary {
+      margin-right: 8px;
+    }
+
+    .clear-button{
+      margin: 0px 8px 0px 8px;
+      border: none;
+      background-color: transparent;
+      color: #0f4d90;
+      cursor: pointer;
+      font-weight: 700;
+      text-decoration: underline;
     }
 
   #programs-container {
