@@ -190,7 +190,10 @@
                   class="program-image"
                 ></div>
                 <div class="content-block">
-                  <h3 :class="{ 'external' : program.link.includes('http') }">{{ program.title }}</h3>
+                  <h3
+                    :class="{ 'external' : program.link.includes('http') }" 
+                    v-html="program.title"
+                  />
                   <p>{{ program.short_description }}</p>
                 </div>
               </a>
