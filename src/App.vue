@@ -122,12 +122,6 @@
           <i class="fas fa-spinner fa-spin fa-3x" />
         </div>
         <div
-          v-show="!loading && emptyResponse"
-          class="h3 mtm center"
-        >
-          {{ $t('No results') }}
-        </div>
-        <div
           v-show="failure"
           class="h3 mtm center"
         >
@@ -136,11 +130,24 @@
         
         <div id="tiles">
           <div class="filter-summary">
-            <span 
-              v-if="search.length > 0" 
-              class="result-summary"
-            >
-              Showing {{ filteredPrograms.length }} results out of {{ programs.length }} in <b><em>Programs</em></b> for <b><em>"{{ search }}"</em></b>
+            <span class="result-summary">
+              <span v-if="emptyResponse">
+                No results found for
+                <span v-if="search.length > 0">
+                  <b><em>"{{ search }}"</em></b>
+                </span>
+              </span>
+              <span
+                v-else-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0" 
+              >
+                Showing {{ filteredPrograms.length }} results out of {{ programs.length }} records for
+                <span v-if="search.length > 0">
+                  <b><em>"{{ search }}"</em></b>
+                </span>
+              </span>
+              <span v-else>
+                Showing {{ programs.length }} results out of {{ programs.length }} records
+              </span>
             </span>
             <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
               <button
@@ -150,13 +157,13 @@
                 @click="removeFilter(item)"
               >
                 {{ item }}
-                <i class="far fa-times" />
+                <i class="fa-solid fa-xmark" />
               </button>
             </span>
 
             <span>
               <input
-                v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
+                v-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
                 type="submit"
                 class="clear-button"
                 value="Clear all"
@@ -673,8 +680,9 @@ export default {
 
     .filter-button{
       margin: 0px 8px 8px 0px;
-      padding: 4px;
+      padding: 6px;
       border-radius: 4px;
+      border: 2px solid transparent;
       background-color: #cfcfcf;
       color: #333333;
       line-height: normal;
@@ -683,12 +691,15 @@ export default {
       cursor: pointer;
     }
 
+    .filter-button:hover {
+      border-color: #2176d2;
+    }
+
     .result-summary {
       margin-right: 8px;
     }
 
     .clear-button{
-      margin: 0px 8px 0px 8px;
       border: none;
       background-color: transparent;
       color: #0f4d90;
