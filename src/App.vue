@@ -157,7 +157,7 @@
                 @click="removeFilter(item)"
               >
                 {{ item }}
-                <i class="fa-solid fa-xmark"></i>
+                <i class="fa-solid fa-xmark" />
               </button>
             </span>
 
