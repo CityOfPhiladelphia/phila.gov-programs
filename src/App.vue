@@ -668,7 +668,6 @@ export default {
       font-size: 20px;
       background-color: #fff;
       opacity: 0.8;
-      z-index: 999;
       cursor: pointer;
       color: rgba(60, 60, 60, 0.5);
       
