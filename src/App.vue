@@ -1,24 +1,25 @@
 <template>
   <div id="programs">
-    <div class="search">
+    <div class="vue-search">
       <input
         id="search-bar"
         v-model="search"
         class="search-field"
         type="text"
         :placeholder="$t('Search')"
-      ><input
-        ref="archive-search-bar"
-        type="submit"
-        class="search-submit"
-        value="Search"
       >
       <button
         v-if="search.length > 0"
         class="clear-search-btn"
         @click="clearSearchBar"
       >
-        <i class="fas fa-times " />
+        <i class="fas fa-times"></i>
+      </button>
+      <button
+        class="search-submit"
+        @click="requestData()"
+      >
+        <i class="fa-solid fa-magnifying-glass"></i>
       </button>
     </div>
     <div 
@@ -201,7 +202,10 @@
                   class="program-image"
                 ></div>
                 <div class="content-block">
-                  <h3 :class="{ 'external' : program.link.includes('http') }">{{ program.title }}</h3>
+                  <h3
+                    :class="{ 'external' : program.link.includes('http') }" 
+                    v-html="program.title"
+                  />
                   <p>{{ program.short_description }}</p>
                 </div>
               </a>
@@ -669,8 +673,18 @@ export default {
   margin: 0 auto;
   max-width: 75rem;
   padding: 0px 10px 0px 10px;
-  
-   .clear-search-btn {
+
+  .vue-search {
+    position: relative;
+    display: flex;
+
+    .search-field{
+      min-height: 3.8rem;
+      border: 2px solid #0f4d90;
+      background: white;
+    }
+
+    .clear-search-btn {
       position: absolute;
       top:16px;
       right: 70px;
@@ -678,12 +692,25 @@ export default {
       font-size: 20px;
       background-color: #fff;
       opacity: 0.8;
-      z-index: 999;
       cursor: pointer;
       color: rgba(60, 60, 60, 0.5);
-      
     }
 
+    .search-submit{ 
+      padding: 0.4rem;
+      font-size: 2rem;
+      font-weight: 400;
+      background: #0f4d90;
+      color: white;
+      width: 3.8rem;
+      height: 3.8rem;
+      cursor: pointer;
+    }
+
+    .fa-magnifying-glass{
+      font-weight: normal;
+    }
+  }
     .filter-summary{
       margin-bottom: 16px;
     }
@@ -719,7 +746,7 @@ export default {
       font-weight: 700;
       text-decoration: underline;
     }
-
+    
   #programs-container {
     display: flex;
 
@@ -781,7 +808,7 @@ export default {
 
     @media (max-width: 760px) {
 
-      .search {
+      .vue-search {
         width: 95%;
         margin: 0 auto;
       }
