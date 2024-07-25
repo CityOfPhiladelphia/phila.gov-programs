@@ -123,12 +123,6 @@
           <i class="fas fa-spinner fa-spin fa-3x" />
         </div>
         <div
-          v-show="!loading && emptyResponse"
-          class="h3 mtm center"
-        >
-          {{ $t('No results') }}
-        </div>
-        <div
           v-show="failure"
           class="h3 mtm center"
         >
@@ -136,8 +130,50 @@
         </div>
         
         <div id="tiles">
+          <div class="filter-summary">
+            <span class="result-summary">
+              <span v-if="emptyResponse">
+                No results found for
+                <span v-if="search.length > 0">
+                  <b><em>"{{ search }}"</em></b>
+                </span>
+              </span>
+              <span
+                v-else-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0" 
+              >
+                Showing {{ filteredPrograms.length }} results out of {{ programs.length }} records for
+                <span v-if="search.length > 0">
+                  <b><em>"{{ search }}"</em></b>
+                </span>
+              </span>
+              <span v-else>
+                Showing {{ programs.length }} results out of {{ programs.length }} records
+              </span>
+            </span>
+            <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
+              <button
+                v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
+                :key="index"
+                class="filter-button"
+                @click="removeFilter(item)"
+              >
+                {{ item }}
+                <i class="fa-solid fa-xmark" />
+              </button>
+            </span>
+
+            <span>
+              <input
+                v-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
+                type="submit"
+                class="clear-button"
+                value="Clear all"
+                @click="clearAllFilters"
+              >
+            </span>
+          </div>
+
           <paginate 
-          
             v-if="filteredPrograms.length > 0 "
             id="program-results"
             ref="paginator"
@@ -453,6 +489,17 @@ export default {
         .catch(e => {
         });
     },
+
+    removeFilter(item) {
+      if (this.checkedAudiences.includes(item)) {
+        this.checkedAudiences = this.checkedAudiences.filter(audience => audience !== item);
+      } else if (this.checkedServiceTypes.includes(item)) {
+        this.checkedServiceTypes = this.checkedServiceTypes.filter(serviceType => serviceType !== item);
+      }
+      this.filterResults();
+      this.updateRouterQuery('checkedAudiences', this.checkedAudiences);
+      this.updateRouterQuery('checkedServiceTypes', this.checkedServiceTypes);
+    },
     
     filterResults: async function () {
       await this.filterByServiceType();
@@ -651,7 +698,40 @@ export default {
       font-weight: normal;
     }
   }
+    .filter-summary{
+      margin: 0px 0px 16px 0px;
+    }
 
+    .filter-button{
+      margin: 0px 8px 8px 0px;
+      padding: 6px;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-color: #cfcfcf;
+      color: #333333;
+      line-height: normal;
+      text-transform: capitalize;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    .filter-button:hover {
+      border-color: #2176d2;
+    }
+
+    .result-summary {
+      margin-right: 8px;
+    }
+
+    .clear-button{
+      border: none;
+      background-color: transparent;
+      color: #0f4d90;
+      cursor: pointer;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+    
   #programs-container {
     display: flex;
 
