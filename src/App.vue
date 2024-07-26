@@ -131,25 +131,18 @@
         
         <div id="tiles">
           <div class="filter-summary">
-            <span class="result-summary">
-              <span v-if="emptyResponse">
-                No results found for
-                <span v-if="search.length > 0">
-                  <b><em>"{{ search }}"</em></b>
-                </span>
+            <div v-if="emptyResponse">
+              No results found for
+              <span v-if="search.length > 0">
+                <b><em>"{{ search }}"</em></b>
               </span>
-              <span
-                v-else-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0" 
-              >
-                Showing {{ filteredPrograms.length }} results out of {{ programs.length }} records for
-                <span v-if="search.length > 0">
-                  <b><em>"{{ search }}"</em></b>
-                </span>
+            </div> 
+            <div v-else-if="$refs.paginator">
+              Showing {{ start }} – {{ end }} of {{ total }} results
+              <span v-if="search.length > 0">
+                for <b><em>"{{ search }}"</em></b>
               </span>
-              <span v-else>
-                Showing {{ programs.length }} results out of {{ programs.length }} records
-              </span>
-            </span>
+            </div>
             <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
               <button
                 v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
@@ -158,10 +151,9 @@
                 @click="removeFilter(item)"
               >
                 {{ item }}
-                <i class="fa-solid fa-xmark" />
+                <i class="fa-solid fa-xmark"></i>
               </button>
             </span>
-
             <span>
               <input
                 v-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
@@ -171,6 +163,18 @@
                 @click="clearAllFilters"
               >
             </span>
+            <div v-if="emptyResponse" class="helper-text">
+              There were no results found matching your search. Try adjusting your search settings.
+              <br>
+              <br>
+              Here are some options:
+              <ul>
+                <li>Use different or fewer search terms</li>
+                <li>Check your spelling</li>
+                <li>Remove or adjust any filters</li>
+              </ul>
+              Want to start over? Select Clear all to reset the search settings.
+            </div>
           </div>
 
           <paginate 
@@ -208,13 +212,6 @@
             </div>
           </paginate>
           <div class="program-pages">
-            <div
-              v-show="!loading && !emptyResponse && !failure"
-              class="program-length"
-            >
-              {{ $t('Showing') }} <b> {{ filteredPrograms.length }} </b> {{ $t('Programs') }}.
-            </div>
-        
             <paginate-links
               v-show="!loading && !emptyResponse && !failure"
               for="filteredPrograms"
@@ -226,7 +223,7 @@
                 next: $t('Next'),
                 prev: $t('Previous')
               }"
-              @change="onPageChange(); scrollToTop(); "
+              @change="onPageChange(); scrollToTop(); getPaginationRange()"
             />
           </div>
           <div
@@ -298,6 +295,9 @@ export default {
       loading: true,
       emptyResponse: false,
       failure: false,
+      start: 0, 
+      end: 0, 
+      total: 0,
       searchOptions: {
         shouldSort: true,
         threshold: 0.4,
@@ -506,6 +506,7 @@ export default {
       await this.filterByAudience();
       await this.filterBySearch();
       await this.checkEmpty();
+      await this.getPaginationRange();
     },
 
     filterByAudience: function() {
@@ -562,6 +563,18 @@ export default {
 
     toggleServices: function() {
       this.showServices = this.showServices ? false : true;
+    },
+
+    getPaginationRange: function () {
+      let rangeRegex = /^(\d+)-(\d+) of (\d+)$/;
+      let matches = rangeRegex.exec(this.$refs.paginator.pageItemsCount);
+
+      if (matches != null) {
+        this.start = matches[1];
+        this.end = matches[2];
+        this.total = matches[3];
+      }
+      return;
     },
 
     updateRouterQuery: function (key, value) {
@@ -699,11 +712,15 @@ export default {
     }
   }
     .filter-summary{
-      margin: 0px 0px 16px 0px;
+      margin-bottom: 16px;
+    }
+
+    .helper-text{
+      margin-top: 16px;
     }
 
     .filter-button{
-      margin: 0px 8px 8px 0px;
+      margin: 8px 8px 0px 0px;
       padding: 6px;
       border-radius: 4px;
       border: 2px solid transparent;
@@ -719,11 +736,9 @@ export default {
       border-color: #2176d2;
     }
 
-    .result-summary {
-      margin-right: 8px;
-    }
-
     .clear-button{
+      margin-top: 12px;
+      padding: 0px;
       border: none;
       background-color: transparent;
       color: #0f4d90;
@@ -787,6 +802,7 @@ export default {
 
   .program-pages {
     display: flex;
+    float: right;
     justify-content: space-between;
   }
 
