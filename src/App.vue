@@ -672,6 +672,12 @@ export default {
         min-height: 353px;
       }
 
+      @media (min-width: 750px) {
+        .program-wrap {
+          display: flex;
+        }
+      }
+
       .trim {
         max-height: 188px;
         overflow: hidden;
