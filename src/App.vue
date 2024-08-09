@@ -13,13 +13,13 @@
         class="clear-search-btn"
         @click="clearSearchBar"
       >
-        <i class="fas fa-times"></i>
+        <i class="fas fa-times" />
       </button>
       <button
         class="search-submit"
         @click="requestData()"
       >
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-solid fa-magnifying-glass" />
       </button>
     </div>
     <div 
@@ -151,7 +151,7 @@
                 @click="removeFilter(item)"
               >
                 {{ item }}
-                <i class="fa-solid fa-xmark"></i>
+                <i class="fa-solid fa-xmark" />
               </button>
             </span>
             <span>
@@ -163,7 +163,10 @@
                 @click="clearAllFilters"
               >
             </span>
-            <div v-if="emptyResponse" class="helper-text">
+            <div
+              v-if="emptyResponse"
+              class="helper-text"
+            >
               There were no results found matching your search. Try adjusting your search settings.
               <br>
               <br>
