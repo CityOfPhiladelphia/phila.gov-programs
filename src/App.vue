@@ -1,24 +1,25 @@
 <template>
   <div id="programs">
-    <div class="search">
+    <div class="vue-search">
       <input
         id="search-bar"
         v-model="search"
         class="search-field"
         type="text"
         :placeholder="$t('Search')"
-      ><input
-        ref="archive-search-bar"
-        type="submit"
-        class="search-submit"
-        value="Search"
       >
       <button
         v-if="search.length > 0"
         class="clear-search-btn"
         @click="clearSearchBar"
       >
-        <i class="fas fa-times " />
+        <i class="fas fa-times"></i>
+      </button>
+      <button
+        class="search-submit"
+        @click="requestData()"
+      >
+        <i class="fa-solid fa-magnifying-glass"></i>
       </button>
     </div>
     <div 
@@ -122,12 +123,6 @@
           <i class="fas fa-spinner fa-spin fa-3x" />
         </div>
         <div
-          v-show="!loading && emptyResponse"
-          class="h3 mtm center"
-        >
-          {{ $t('No results') }}
-        </div>
-        <div
           v-show="failure"
           class="h3 mtm center"
         >
@@ -135,8 +130,54 @@
         </div>
         
         <div id="tiles">
+          <div class="filter-summary">
+            <div v-if="emptyResponse">
+              No results found for
+              <span v-if="search.length > 0">
+                <b><em>"{{ search }}"</em></b>
+              </span>
+            </div> 
+            <div v-else-if="$refs.paginator">
+              Showing {{ start }} – {{ end }} of {{ total }} results
+              <span v-if="search.length > 0">
+                for <b><em>"{{ search }}"</em></b>
+              </span>
+            </div>
+            <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
+              <button
+                v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
+                :key="index"
+                class="filter-button"
+                @click="removeFilter(item)"
+              >
+                {{ item }}
+                <i class="fa-solid fa-xmark"></i>
+              </button>
+            </span>
+            <span>
+              <input
+                v-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
+                type="submit"
+                class="clear-button"
+                value="Clear all"
+                @click="clearAllFilters"
+              >
+            </span>
+            <div v-if="emptyResponse" class="helper-text">
+              There were no results found matching your search. Try adjusting your search settings.
+              <br>
+              <br>
+              Here are some options:
+              <ul>
+                <li>Use different or fewer search terms</li>
+                <li>Check your spelling</li>
+                <li>Remove or adjust any filters</li>
+              </ul>
+              Want to start over? Select Clear all to reset the search settings.
+            </div>
+          </div>
+
           <paginate 
-          
             v-if="filteredPrograms.length > 0 "
             id="program-results"
             ref="paginator"
@@ -171,13 +212,6 @@
             </div>
           </paginate>
           <div class="program-pages">
-            <div
-              v-show="!loading && !emptyResponse && !failure"
-              class="program-length"
-            >
-              {{ $t('Showing') }} <b> {{ filteredPrograms.length }} </b> {{ $t('Programs') }}.
-            </div>
-        
             <paginate-links
               v-show="!loading && !emptyResponse && !failure"
               for="filteredPrograms"
@@ -189,7 +223,7 @@
                 next: $t('Next'),
                 prev: $t('Previous')
               }"
-              @change="onPageChange(); scrollToTop(); "
+              @change="onPageChange(); scrollToTop(); getPaginationRange()"
             />
           </div>
           <div
@@ -261,6 +295,9 @@ export default {
       loading: true,
       emptyResponse: false,
       failure: false,
+      start: 0, 
+      end: 0, 
+      total: 0,
       searchOptions: {
         shouldSort: true,
         threshold: 0.4,
@@ -452,12 +489,24 @@ export default {
         .catch(e => {
         });
     },
+
+    removeFilter(item) {
+      if (this.checkedAudiences.includes(item)) {
+        this.checkedAudiences = this.checkedAudiences.filter(audience => audience !== item);
+      } else if (this.checkedServiceTypes.includes(item)) {
+        this.checkedServiceTypes = this.checkedServiceTypes.filter(serviceType => serviceType !== item);
+      }
+      this.filterResults();
+      this.updateRouterQuery('checkedAudiences', this.checkedAudiences);
+      this.updateRouterQuery('checkedServiceTypes', this.checkedServiceTypes);
+    },
     
     filterResults: async function () {
       await this.filterByServiceType();
       await this.filterByAudience();
       await this.filterBySearch();
       await this.checkEmpty();
+      await this.getPaginationRange();
     },
 
     filterByAudience: function() {
@@ -514,6 +563,18 @@ export default {
 
     toggleServices: function() {
       this.showServices = this.showServices ? false : true;
+    },
+
+    getPaginationRange: function () {
+      let rangeRegex = /^(\d+)-(\d+) of (\d+)$/;
+      let matches = rangeRegex.exec(this.$refs.paginator.pageItemsCount);
+
+      if (matches != null) {
+        this.start = matches[1];
+        this.end = matches[2];
+        this.total = matches[3];
+      }
+      return;
     },
 
     updateRouterQuery: function (key, value) {
@@ -613,7 +674,17 @@ export default {
   max-width: 75rem;
   padding: 0px 10px 0px 10px;
 
-   .clear-search-btn {
+  .vue-search {
+    position: relative;
+    display: flex;
+
+    .search-field{
+      min-height: 3.8rem;
+      border: 2px solid #0f4d90;
+      background: white;
+    }
+
+    .clear-search-btn {
       position: absolute;
       top:16px;
       right: 70px;
@@ -623,9 +694,59 @@ export default {
       opacity: 0.8;
       cursor: pointer;
       color: rgba(60, 60, 60, 0.5);
-      
     }
 
+    .search-submit{ 
+      padding: 0.4rem;
+      font-size: 2rem;
+      font-weight: 400;
+      background: #0f4d90;
+      color: white;
+      width: 3.8rem;
+      height: 3.8rem;
+      cursor: pointer;
+    }
+
+    .fa-magnifying-glass{
+      font-weight: normal;
+    }
+  }
+    .filter-summary{
+      margin-bottom: 16px;
+    }
+
+    .helper-text{
+      margin-top: 16px;
+    }
+
+    .filter-button{
+      margin: 8px 8px 0px 0px;
+      padding: 6px;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-color: #cfcfcf;
+      color: #333333;
+      line-height: normal;
+      text-transform: capitalize;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    .filter-button:hover {
+      border-color: #2176d2;
+    }
+
+    .clear-button{
+      margin-top: 12px;
+      padding: 0px;
+      border: none;
+      background-color: transparent;
+      color: #0f4d90;
+      cursor: pointer;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+    
   #programs-container {
     display: flex;
     margin-top: 2rem;
@@ -714,12 +835,13 @@ export default {
 
   .program-pages {
     display: flex;
+    float: right;
     justify-content: space-between;
   }
 
     @media (max-width: 760px) {
 
-      .search {
+      .vue-search {
         width: 95%;
         margin: 0 auto;
       }
