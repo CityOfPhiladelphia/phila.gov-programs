@@ -685,7 +685,6 @@ export default {
       min-height: 3.8rem;
       border: 2px solid #0f4d90;
       background: white;
-      margin: 0;
     }
 
     .clear-search-btn {
