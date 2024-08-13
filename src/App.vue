@@ -672,10 +672,15 @@ export default {
 
     #programs-display {
       width: 66%;    
+
+      .grid-margin-x {
+        margin-left: -1rem;
+        margin-right: -1rem;
+      }
       
       @media (min-width: 46.785em) {
         .grid-margin-x>.medium-12 {
-          width: calc(50% - 1.8rem);
+          width: calc(50% - 1.9rem);
         }
       }
 
@@ -709,10 +714,15 @@ export default {
         max-height: 188px;
         overflow: hidden;
       }
+
+      .paginate-links{
+        margin-top: 1rem;
+      }
     } 
   }
 
   .program-pages {
+    margin-right: -0.4rem;
     display: flex;
     justify-content: space-between;
   }
