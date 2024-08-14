@@ -737,7 +737,7 @@ export default {
     }
 
     .clear-button{
-      margin-top: 12px;
+      margin: 12px 0 0 8px;
       padding: 0px;
       border: none;
       background-color: transparent;
