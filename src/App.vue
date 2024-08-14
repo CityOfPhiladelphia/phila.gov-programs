@@ -662,6 +662,8 @@ export default {
 
       .clear-button {
         margin: 0 auto;
+        background-color: #0F4D90;
+        color: #ffffff;
       }
     }
 
