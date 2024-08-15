@@ -628,10 +628,15 @@ export default {
 
   #programs-container {
     display: flex;
+    margin-top: 2rem;
 
     #filters-container {
       width: 33%;
-      padding-right: 2rem;
+      margin-right: 1rem;
+
+      .accordion{
+        margin-right: 1rem;
+      }
 
       .accordion-title {
         font-weight: bold;
@@ -666,20 +671,58 @@ export default {
     }
 
     #programs-display {
-      width: 66%;
+      width: 66%;    
+
+      .grid-margin-x {
+        margin-left: -1rem;
+        margin-right: -1rem;
+      }
+      
+      @media (min-width: 46.785em) {
+        .grid-margin-x>.medium-12 {
+          width: calc(50% - 1.9rem);
+        }
+      }
+
+      .program-wrap:first-child {
+        margin-top: 0 !important;
+      }
+
+      .program-wrap:nth-child(2){
+        margin-top: 0 !important;
+      }
+
+      .program-wrap:nth-child(even){
+        margin: 1rem 0 1rem 1rem;
+      }
+
+      .program-wrap:nth-child(odd){
+        margin: 1rem 1rem;
+      }
 
       .program-wrap {
         min-height: 353px;
+      }
+
+      @media (min-width: 750px) {
+        .program-wrap {
+          display: flex;
+        }
       }
 
       .trim {
         max-height: 188px;
         overflow: hidden;
       }
+
+      .paginate-links{
+        margin-top: 1rem;
+      }
     } 
   }
 
   .program-pages {
+    margin-right: -0.4rem;
     display: flex;
     justify-content: space-between;
   }
