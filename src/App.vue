@@ -158,7 +158,7 @@
               <input
                 v-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
                 type="submit"
-                class="clear-button"
+                class="clear-all-button"
                 value="Clear all"
                 @click="clearAllFilters"
               >
@@ -736,7 +736,7 @@ export default {
       border-color: #2176d2;
     }
 
-    .clear-button{
+    .clear-all-button {
       margin: 12px 0 0 8px;
       padding: 0px;
       border: none;
