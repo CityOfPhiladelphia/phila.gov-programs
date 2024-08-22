@@ -183,7 +183,11 @@
             ref="paginator"
             name="filteredPrograms"
             :list="filteredPrograms"
-            class="grid-x grid-margin-x paginate-list"
+            :class="{
+              'grid-x': true, 
+              'paginate-list': true, 
+              'grid-margin-x': isLargeScreen
+            }"
             tag="div"
             :per="8"
           >
@@ -353,6 +357,10 @@ export default {
       const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_service_categories.json`;
       
       return url;
+    },
+
+    isLargeScreen() {
+      return window.innerWidth > 768;
     },
   },
 
@@ -806,27 +814,27 @@ export default {
         }
       }
 
-      .program-wrap:first-child {
-        margin-top: 0 !important;
-      }
-
-      .program-wrap:nth-child(2){
-        margin-top: 0 !important;
-      }
-
-      .program-wrap:nth-child(even){
-        margin: 1rem 0 1rem 1rem;
-      }
-
-      .program-wrap:nth-child(odd){
-        margin: 1rem 1rem;
-      }
-
-      .program-wrap {
-        min-height: 353px;
-      }
-
       @media (min-width: 750px) {
+        .program-wrap:first-child {
+            margin-top: 0 !important;
+          }
+
+          .program-wrap:nth-child(2){
+            margin-top: 0 !important;
+          }
+
+          .program-wrap:nth-child(even){
+            margin: 1rem 0 1rem 1rem;
+          }
+
+          .program-wrap:nth-child(odd){
+            margin: 1rem 1rem;
+          }
+
+          .program-wrap {
+            min-height: 353px;
+          }
+          
         .program-wrap {
           display: flex;
         }
@@ -852,6 +860,10 @@ export default {
 
     @media (max-width: 760px) {
 
+      .program-wrap {
+        margin: 0.5rem 0;
+      }
+
       .vue-search {
         width: 95%;
         margin: 0 auto;
@@ -861,13 +873,13 @@ export default {
         flex-direction: column;
         
         #filters-container {
-          width: 95%;
+          width: 100%;
           margin: 0 auto;
           padding:0 0 1rem 0
         }
         
         #programs-display {
-          width: 95%;
+          width: 100%;
           margin: 0 auto;
         }
       }
