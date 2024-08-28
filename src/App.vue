@@ -148,6 +148,17 @@
               >
                 for <b><em>"{{ search }}"</em></b>
               </span>
+            </div>
+            <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
+              <button
+                v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
+                :key="index"
+                class="filter-button"
+                @click="removeFilter(item)"
+              >
+                {{ item }}
+                <i class="fa-solid fa-xmark" />
+              </button>
             </span>
             <span>
               <input
@@ -182,7 +193,7 @@
               v-if="emptyResponse" 
               class="helper-text"
             >
-            Improve your search results by:
+              Improve your search results by:
               <br>
               <br>
               <ul>
@@ -200,7 +211,11 @@
             ref="paginator"
             name="filteredPrograms"
             :list="filteredPrograms"
-            class="grid-x grid-margin-x paginate-list"
+            :class="{
+              'grid-x': true, 
+              'paginate-list': true, 
+              'grid-margin-x': isLargeScreen
+            }"
             tag="div"
             :per="8"
           >
@@ -370,6 +385,10 @@ export default {
       const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_service_categories.json`;
       
       return url;
+    },
+
+    isLargeScreen() {
+      return window.innerWidth > 768;
     },
   },
 
@@ -699,6 +718,7 @@ export default {
       min-height: 3.8rem;
       border: 2px solid #0f4d90;
       background: white;
+      margin: 0;
     }
 
     .clear-search-btn {
@@ -729,7 +749,7 @@ export default {
     }
   }
     .filter-summary{
-      margin-bottom: 16px;
+      margin-bottom: 2rem;
     }
 
     .helper-text{
@@ -776,10 +796,15 @@ export default {
     
   #programs-container {
     display: flex;
+    margin-top: 2rem;
 
     #filters-container {
       width: 33%;
-      padding-right: 2rem;
+      margin-right: 1rem;
+
+      .accordion{
+        margin-right: 1rem;
+      }
 
       .accordion-title {
         font-weight: bold;
@@ -810,30 +835,74 @@ export default {
 
       .clear-button {
         margin: 0 auto;
+        background-color: #0F4D90;
+        color: #ffffff;
       }
     }
 
     #programs-display {
-      width: 66%;
+      width: 66%;    
 
-      .program-wrap {
-        min-height: 353px;
+      .grid-margin-x {
+        margin-left: -1rem;
+        margin-right: -1rem;
+      }
+      
+      @media (min-width: 46.785em) {
+        .grid-margin-x>.medium-12 {
+          width: calc(50% - 1.9rem);
+        }
+      }
+
+      @media (min-width: 750px) {
+        .program-wrap:first-child {
+            margin-top: 0 !important;
+          }
+
+          .program-wrap:nth-child(2){
+            margin-top: 0 !important;
+          }
+
+          .program-wrap:nth-child(even){
+            margin: 1rem 0 1rem 1rem;
+          }
+
+          .program-wrap:nth-child(odd){
+            margin: 1rem 1rem;
+          }
+
+          .program-wrap {
+            min-height: 353px;
+          }
+          
+        .program-wrap {
+          display: flex;
+        }
       }
 
       .trim {
         max-height: 188px;
         overflow: hidden;
       }
+
+      .paginate-links{
+        margin-top: 1rem;
+      }
     } 
   }
 
   .program-pages {
+    margin-right: -0.4rem;
     display: flex;
     float: right;
     justify-content: space-between;
   }
 
     @media (max-width: 760px) {
+
+      .program-wrap {
+        margin: 0.5rem 0;
+      }
 
       .vue-search {
         width: 95%;
@@ -844,13 +913,13 @@ export default {
         flex-direction: column;
         
         #filters-container {
-          width: 95%;
+          width: 100%;
           margin: 0 auto;
           padding:0 0 1rem 0
         }
         
         #programs-display {
-          width: 95%;
+          width: 100%;
           margin: 0 auto;
         }
       }
