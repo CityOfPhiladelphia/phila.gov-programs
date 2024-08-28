@@ -13,13 +13,13 @@
         class="clear-search-btn"
         @click="clearSearchBar"
       >
-        <i class="fas fa-times"></i>
+        <i class="fas fa-times" />
       </button>
       <button
         class="search-submit"
         @click="requestData()"
       >
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-solid fa-magnifying-glass" />
       </button>
     </div>
     <div 
@@ -131,19 +131,34 @@
         
         <div id="tiles">
           <div class="filter-summary">
-            <div v-if="emptyResponse">
+            <span v-if="emptyResponse">
               No results found for
-              <span v-if="search.length > 0">
+              <span 
+                v-if="search.length > 0"
+                class="search-term" 
+              >
                 <b><em>"{{ search }}"</em></b>
               </span>
-            </div> 
-            <div v-else-if="$refs.paginator">
+            </span> 
+            <span v-else-if="$refs.paginator">
               Showing {{ start }} – {{ end }} of {{ total }} results
-              <span v-if="search.length > 0">
+              <span 
+                v-if="search.length > 0"
+                class="search-term"
+              >
                 for <b><em>"{{ search }}"</em></b>
               </span>
-            </div>
-            <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
+            </span>
+            <span>
+              <input
+                v-if="search.length > 0 && checkedAudiences.length == 0 && checkedServiceTypes.length == 0"
+                type="submit"
+                class="clear-all-button"
+                value="Clear all"
+                @click="clearAllFilters"
+              >
+            </span>
+            <div v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
               <button
                 v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
                 :key="index"
@@ -151,29 +166,31 @@
                 @click="removeFilter(item)"
               >
                 {{ item }}
-                <i class="fa-solid fa-xmark"></i>
+                <i class="fa-solid fa-xmark" />
               </button>
-            </span>
-            <span>
-              <input
-                v-if="search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
-                type="submit"
-                class="clear-all-button"
-                value="Clear all"
-                @click="clearAllFilters"
-              >
-            </span>
-            <div v-if="emptyResponse" class="helper-text">
-              There were no results found matching your search. Try adjusting your search settings.
+              <span>
+                <input
+                  v-if="!emptyResponse && search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
+                  type="submit"
+                  class="clear-all-button"
+                  value="Clear all"
+                  @click="clearAllFilters"
+                >
+              </span>
+            </div>
+            <div 
+              v-if="emptyResponse" 
+              class="helper-text"
+            >
+            Improve your search results by:
               <br>
               <br>
-              Here are some options:
               <ul>
                 <li>Use different or fewer search terms</li>
                 <li>Check your spelling</li>
                 <li>Remove or adjust any filters</li>
               </ul>
-              Want to start over? Select Clear all to reset the search settings.
+              Want to start over? Select “Clear all” to reset the search settings.
             </div>
           </div>
 
@@ -716,12 +733,18 @@ export default {
     }
 
     .helper-text{
-      margin-top: 16px;
+      background: rgba(150,201,255,.3);
+      padding: 32px;
+      margin-top: 2rem;
+    }
+
+    .search-term {
+      margin-right: 8px;
     }
 
     .filter-button{
       margin: 8px 8px 0px 0px;
-      padding: 6px;
+      padding: 4px;
       border-radius: 4px;
       border: 2px solid transparent;
       background-color: #cfcfcf;
@@ -734,6 +757,10 @@ export default {
 
     .filter-button:hover {
       border-color: #2176d2;
+    }
+
+    .filter-button i{
+      padding-left: 4px;
     }
 
     .clear-all-button {
