@@ -149,17 +149,6 @@
                 for <b><em>"{{ search }}"</em></b>
               </span>
             </span>
-            <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
-              <button
-                v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
-                :key="index"
-                class="filter-button"
-                @click="removeFilter(item)"
-              >
-                {{ item }}
-                <i class="fa-solid fa-xmark" />
-              </button>
-            </span>
             <span>
               <input
                 v-if="search.length > 0 && checkedAudiences.length == 0 && checkedServiceTypes.length == 0"
