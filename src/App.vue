@@ -148,7 +148,7 @@
               >
                 for <b><em>"{{ search }}"</em></b>
               </span>
-            </div>
+            </span>
             <span v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
               <button
                 v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
