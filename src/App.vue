@@ -610,7 +610,7 @@ export default {
 
 #programs {
   margin: 0 auto;
-  max-width: 75rem;
+  max-width: 90rem;
   padding: 0px 10px 0px 10px;
 
    .clear-search-btn {
