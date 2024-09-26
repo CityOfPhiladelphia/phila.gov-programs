@@ -54,7 +54,7 @@
                 :id="value.slug"
                 v-model="checkedAudiences"
                 type="checkbox"
-                :value="value.slug"
+                :value="value.name"
                 :name="value.slug"
                 class="hidden-checkbox"
                 @change="filterResults"
@@ -93,7 +93,7 @@
                   v-model="checkedServiceTypes"
                   type="checkbox"
                   class="hidden-checkbox"
-                  :value="value.slug"
+                  :value="value.name"
                   :name="value.slug"
                   @click="filterResults"
                 >
@@ -165,7 +165,7 @@
                 class="filter-button"
                 @click="removeFilter(item)"
               >
-                {{ item }}
+                <span v-html="item"> </span>
                 <i class="fa-solid fa-xmark" />
               </button>
               <span>
@@ -182,13 +182,16 @@
               v-if="emptyResponse" 
               class="helper-text"
             >
+            <strong>There are no matching results.</strong>
+              <br>
+              <br>
               Improve your search results by:
               <br>
               <br>
               <ul>
-                <li>Use different or fewer search terms</li>
-                <li>Check your spelling</li>
-                <li>Remove or adjust any filters</li>
+                <li>Using different or fewer search terms.</li>
+                <li>Checking your spelling.</li>
+                <li>Removing or adjusting any filters.</li>
               </ul>
               Want to start over? Select “Clear all” to reset the search settings.
             </div>
@@ -540,7 +543,7 @@ export default {
         
         this.servicePrograms.forEach((program) => {
           program.audiences.forEach((audience) => {
-            if (this.checkedAudiences.includes(audience.slug)) {
+            if (this.checkedAudiences.includes(audience.name)) {
               if (!this.audiencePrograms.includes(program)) {
                 this.audiencePrograms.push(program);
               }
@@ -570,7 +573,7 @@ export default {
         this.programs.forEach((program) => {
           
           program.services.forEach((serviceType) => {
-            if (this.checkedServiceTypes.includes(serviceType.slug)) {
+            if (this.checkedServiceTypes.includes(serviceType.name)) {
               if (!this.servicePrograms.includes(program)) {
                 this.servicePrograms.push(program);
               }
@@ -745,6 +748,7 @@ export default {
       background: rgba(150,201,255,.3);
       padding: 32px;
       margin-top: 2rem;
+      width: fit-content;
     }
 
     .search-term {
