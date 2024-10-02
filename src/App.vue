@@ -699,7 +699,7 @@ export default {
 
 #programs {
   margin: 0 auto;
-  max-width: 75rem;
+  max-width: 90rem;
   padding: 0px 10px 0px 10px;
 
   .vue-search {
@@ -873,6 +873,12 @@ export default {
         }
       }
 
+      @media (min-width: 750px) {
+        .program-wrap {
+          display: flex;
+        }
+      }
+
       .trim {
         max-height: 188px;
         overflow: hidden;
@@ -892,11 +898,9 @@ export default {
   }
 
     @media (max-width: 760px) {
-
       .program-wrap {
         margin: 0.5rem 0;
       }
-
       .vue-search {
         width: 95%;
         margin: 0 auto;
