@@ -13,13 +13,13 @@
         class="clear-search-btn"
         @click="clearSearchBar"
       >
-        <i class="fas fa-times"></i>
+        <i class="fas fa-times" />
       </button>
       <button
         class="search-submit"
         @click="requestData()"
       >
-        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-solid fa-magnifying-glass" />
       </button>
     </div>
     <div 
@@ -54,7 +54,7 @@
                 :id="value.slug"
                 v-model="checkedAudiences"
                 type="checkbox"
-                :value="value.slug"
+                :value="value.name"
                 :name="value.slug"
                 class="hidden-checkbox"
                 @change="filterResults"
@@ -93,7 +93,7 @@
                   v-model="checkedServiceTypes"
                   type="checkbox"
                   class="hidden-checkbox"
-                  :value="value.slug"
+                  :value="value.name"
                   :name="value.slug"
                   @click="filterResults"
                 >
@@ -123,12 +123,6 @@
           <i class="fas fa-spinner fa-spin fa-3x" />
         </div>
         <div
-          v-show="!loading && emptyResponse"
-          class="h3 mtm center"
-        >
-          {{ $t('No results') }}
-        </div>
-        <div
           v-show="failure"
           class="h3 mtm center"
         >
@@ -136,14 +130,84 @@
         </div>
         
         <div id="tiles">
+          <div class="filter-summary">
+            <span v-if="emptyResponse">
+              No results found for
+              <span 
+                v-if="search.length > 0"
+                class="search-term" 
+              >
+                <b><em>"{{ search }}"</em></b>
+              </span>
+            </span> 
+            <span v-else-if="$refs.paginator">
+              Showing {{ start }} – {{ end }} of {{ total }} results
+              <span 
+                v-if="search.length > 0"
+                class="search-term"
+              >
+                for <b><em>"{{ search }}"</em></b>
+              </span>
+            </span>
+            <span>
+              <input
+                v-if="search.length > 0 && checkedAudiences.length == 0 && checkedServiceTypes.length == 0"
+                type="submit"
+                class="clear-all-button"
+                value="Clear all"
+                @click="clearAllFilters"
+              >
+            </span>
+            <div v-if="checkedAudiences.length > 0 || checkedServiceTypes.length > 0">
+              <button
+                v-for="(item, index) in [...checkedAudiences, ...checkedServiceTypes]"
+                :key="index"
+                class="filter-button"
+                @click="removeFilter(item)"
+              >
+                <span v-html="item"> </span>
+                <i class="fa-solid fa-xmark" />
+              </button>
+              <span>
+                <input
+                  v-if="!emptyResponse && search.length > 0 || checkedAudiences.length > 0 || checkedServiceTypes.length > 0"
+                  type="submit"
+                  class="clear-all-button"
+                  value="Clear all"
+                  @click="clearAllFilters"
+                >
+              </span>
+            </div>
+            <div 
+              v-if="emptyResponse" 
+              class="helper-text"
+            >
+            <strong>There are no matching results.</strong>
+              <br>
+              <br>
+              Improve your search results by:
+              <br>
+              <br>
+              <ul>
+                <li>Using different or fewer search terms.</li>
+                <li>Checking your spelling.</li>
+                <li>Removing or adjusting any filters.</li>
+              </ul>
+              Want to start over? Select “Clear all” to reset the search settings.
+            </div>
+          </div>
+
           <paginate 
-          
             v-if="filteredPrograms.length > 0 "
             id="program-results"
             ref="paginator"
             name="filteredPrograms"
             :list="filteredPrograms"
-            class="grid-x grid-margin-x paginate-list"
+            :class="{
+              'grid-x': true, 
+              'paginate-list': true, 
+              'grid-margin-x': isLargeScreen
+            }"
             tag="div"
             :per="8"
           >
@@ -172,13 +236,6 @@
             </div>
           </paginate>
           <div class="program-pages">
-            <div
-              v-show="!loading && !emptyResponse && !failure"
-              class="program-length"
-            >
-              {{ $t('Showing') }} <b> {{ filteredPrograms.length }} </b> {{ $t('Programs') }}.
-            </div>
-        
             <paginate-links
               v-show="!loading && !emptyResponse && !failure"
               for="filteredPrograms"
@@ -190,7 +247,7 @@
                 next: $t('Next'),
                 prev: $t('Previous')
               }"
-              @change="onPageChange(); scrollToTop(); "
+              @change="onPageChange(); scrollToTop(); getPaginationRange()"
             />
           </div>
           <div
@@ -262,6 +319,9 @@ export default {
       loading: true,
       emptyResponse: false,
       failure: false,
+      start: 0, 
+      end: 0, 
+      total: 0,
       searchOptions: {
         shouldSort: true,
         threshold: 0.4,
@@ -317,6 +377,10 @@ export default {
       const url = process.env.VUE_APP_BUCKET_URL + `${languageCode}/phila_service_categories.json`;
       
       return url;
+    },
+
+    isLargeScreen() {
+      return window.innerWidth > 768;
     },
   },
 
@@ -453,12 +517,24 @@ export default {
         .catch(e => {
         });
     },
+
+    removeFilter(item) {
+      if (this.checkedAudiences.includes(item)) {
+        this.checkedAudiences = this.checkedAudiences.filter(audience => audience !== item);
+      } else if (this.checkedServiceTypes.includes(item)) {
+        this.checkedServiceTypes = this.checkedServiceTypes.filter(serviceType => serviceType !== item);
+      }
+      this.filterResults();
+      this.updateRouterQuery('checkedAudiences', this.checkedAudiences);
+      this.updateRouterQuery('checkedServiceTypes', this.checkedServiceTypes);
+    },
     
     filterResults: async function () {
       await this.filterByServiceType();
       await this.filterByAudience();
       await this.filterBySearch();
       await this.checkEmpty();
+      await this.getPaginationRange();
     },
 
     filterByAudience: function() {
@@ -467,7 +543,7 @@ export default {
         
         this.servicePrograms.forEach((program) => {
           program.audiences.forEach((audience) => {
-            if (this.checkedAudiences.includes(audience.slug)) {
+            if (this.checkedAudiences.includes(audience.name)) {
               if (!this.audiencePrograms.includes(program)) {
                 this.audiencePrograms.push(program);
               }
@@ -497,7 +573,7 @@ export default {
         this.programs.forEach((program) => {
           
           program.services.forEach((serviceType) => {
-            if (this.checkedServiceTypes.includes(serviceType.slug)) {
+            if (this.checkedServiceTypes.includes(serviceType.name)) {
               if (!this.servicePrograms.includes(program)) {
                 this.servicePrograms.push(program);
               }
@@ -515,6 +591,18 @@ export default {
 
     toggleServices: function() {
       this.showServices = this.showServices ? false : true;
+    },
+
+    getPaginationRange: function () {
+      let rangeRegex = /^(\d+)-(\d+) of (\d+)$/;
+      let matches = rangeRegex.exec(this.$refs.paginator.pageItemsCount);
+
+      if (matches != null) {
+        this.start = matches[1];
+        this.end = matches[2];
+        this.total = matches[3];
+      }
+      return;
     },
 
     updateRouterQuery: function (key, value) {
@@ -622,6 +710,7 @@ export default {
       min-height: 3.8rem;
       border: 2px solid #0f4d90;
       background: white;
+      margin: 0;
     }
 
     .clear-search-btn {
@@ -651,7 +740,53 @@ export default {
       font-weight: normal;
     }
   }
+    .filter-summary{
+      margin-bottom: 2rem;
+    }
 
+    .helper-text{
+      background: rgba(150,201,255,.3);
+      padding: 32px;
+      margin-top: 2rem;
+      width: fit-content;
+    }
+
+    .search-term {
+      margin-right: 8px;
+    }
+
+    .filter-button{
+      margin: 8px 8px 0px 0px;
+      padding: 4px;
+      border-radius: 4px;
+      border: 2px solid transparent;
+      background-color: #cfcfcf;
+      color: #333333;
+      line-height: normal;
+      text-transform: capitalize;
+      font-weight: normal;
+      cursor: pointer;
+    }
+
+    .filter-button:hover {
+      border-color: #2176d2;
+    }
+
+    .filter-button i{
+      padding-left: 4px;
+    }
+
+    .clear-all-button {
+      margin: 12px 0 0 8px;
+      padding: 0px;
+      border: none;
+      background-color: transparent;
+      color: #0f4d90;
+      cursor: pointer;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+    
   #programs-container {
     display: flex;
     margin-top: 2rem;
@@ -712,24 +847,30 @@ export default {
         }
       }
 
-      .program-wrap:first-child {
-        margin-top: 0 !important;
-      }
+      @media (min-width: 750px) {
+        .program-wrap:first-child {
+            margin-top: 0 !important;
+          }
 
-      .program-wrap:nth-child(2){
-        margin-top: 0 !important;
-      }
+          .program-wrap:nth-child(2){
+            margin-top: 0 !important;
+          }
 
-      .program-wrap:nth-child(even){
-        margin: 1rem 0 1rem 1rem;
-      }
+          .program-wrap:nth-child(even){
+            margin: 1rem 0 1rem 1rem;
+          }
 
-      .program-wrap:nth-child(odd){
-        margin: 1rem 1rem;
-      }
+          .program-wrap:nth-child(odd){
+            margin: 1rem 1rem;
+          }
 
-      .program-wrap {
-        min-height: 353px;
+          .program-wrap {
+            min-height: 353px;
+          }
+          
+        .program-wrap {
+          display: flex;
+        }
       }
 
       @media (min-width: 750px) {
@@ -752,11 +893,14 @@ export default {
   .program-pages {
     margin-right: -0.4rem;
     display: flex;
+    float: right;
     justify-content: space-between;
   }
 
     @media (max-width: 760px) {
-
+      .program-wrap {
+        margin: 0.5rem 0;
+      }
       .vue-search {
         width: 95%;
         margin: 0 auto;
@@ -766,13 +910,13 @@ export default {
         flex-direction: column;
         
         #filters-container {
-          width: 95%;
+          width: 100%;
           margin: 0 auto;
           padding:0 0 1rem 0
         }
         
         #programs-display {
-          width: 95%;
+          width: 100%;
           margin: 0 auto;
         }
       }
