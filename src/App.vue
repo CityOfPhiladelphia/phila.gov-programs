@@ -898,11 +898,9 @@ export default {
   }
 
     @media (max-width: 760px) {
-
       .program-wrap {
         margin: 0.5rem 0;
       }
-
       .vue-search {
         width: 95%;
         margin: 0 auto;
